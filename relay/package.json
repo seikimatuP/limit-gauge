@@ -1,0 +1,25 @@
+{
+  "name": "limit-gauge-relay",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Relay between Claude Code's status line and the Limit Gauge Android widget",
+  "scripts": {
+    "setup": "node setup.mjs",
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "test": "node --test test/*.test.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "workerd"
+    ]
+  }
+}

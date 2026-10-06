@@ -1,0 +1,5 @@
+node_modules/
+.wrangler/
+.dev.vars
+# holds the relay URL and token written by setup.mjs
+.relay.json
