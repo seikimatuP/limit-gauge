@@ -1,0 +1,8 @@
+.gradle/
+build/
+app/build/
+local.properties
+.idea/
+*.iml
+# Personal signing key: keep a private backup (needed to update the installed app), never publish it.
+keystore/

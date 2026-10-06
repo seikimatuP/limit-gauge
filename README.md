@@ -1,0 +1,98 @@
+# Limit Gauge — Claude Code のリミットを Android ウィジェットに
+
+ChatGPT アプリの Codex ウィジェット（5時間・週間の残り）の Claude 版です（非公式）。
+Galaxy などの Android ホーム画面に Claude Code の **5時間リミット / 週間リミット** の残りを表示します。
+
+```
+PC: Claude Code ──(ステータスラインの rate_limits)──> limit-gauge-push.mjs
+                                                        │ HTTPS + トークン
+                                                        ▼
+                              Cloudflare Worker（あなたのアカウント、無料プラン）
+                                                        │ 15〜30分ごとに取得
+                                                        ▼
+                                         Android: リミットゲージ（ウィジェット）
+```
+
+- データ元は Claude Code が公式にステータスラインへ渡している `rate_limits`（5時間・7日の使用率とリセット時刻）だけです。
+  Claude の OAuth トークンやログイン情報は一切読みません（Anthropic の規約上、Claude のログイン情報を他アプリで使うことは禁止されているため）。
+- Pro / Max プランで Claude Code を使っている場合に値が出ます。
+
+## 中身
+
+| フォルダ | 内容 |
+|---|---|
+| `dist/LimitGauge-1.0.0.apk` | ビルド済み APK（minSdk 31 / targetSdk 36、署名済み） |
+| `android/` | アプリのソース（Java、AndroidX 不使用）。Android Studio でそのまま開けます |
+| `relay/` | 中継用 Cloudflare Worker（Durable Object/SQLite）と `npm run setup` |
+| `pc/limit-gauge-push.mjs` | Claude Code のステータスラインに挟む送信スクリプト（Node 18+、依存なし） |
+
+## セットアップ（初回 10 分ほど）
+
+### 1. スマホにアプリを入れる
+`dist/LimitGauge-1.0.0.apk` をスマホで開いてインストールします。
+- 「提供元不明のアプリ」の許可を求められたら、開いたアプリ（マイファイル／ブラウザ等）に許可してください。
+- Galaxy で **自動ブロッカー（Auto Blocker）** がオンだとインストールできません。設定 → セキュリティとプライバシー → 自動ブロッカー を一時的にオフにしてください。
+
+### 2. PC でリレーをデプロイ（WSL で OK、Node 22 以上）
+```bash
+cd relay
+npm install
+npm run setup
+```
+`setup` が次を順に行います。
+1. Cloudflare ログイン（未ログインならブラウザが開きます）
+2. `limit-gauge-relay` Worker をデプロイ
+3. ランダムなトークンを作って Worker のシークレット `TOKEN` に設定（`relay/.relay.json` に保存）
+4. ペアリングページ（QR コード）をブラウザで開く
+5. この環境の `~/.claude/settings.json` に送信処理を追加（確認あり）
+
+既存のステータスライン（ccstatusline など）は**そのまま表示されます**。送信処理はその前段に挟まるだけです。
+
+### 3. スマホとペアリング
+PC に表示された QR コードを Galaxy のカメラで読み取り →「アプリで開く」→「保存」。
+（開かない場合は、ページ下の「手動で入力する」の URL とトークンをアプリに入力）
+
+### 4. ウィジェットを置く
+アプリの「ウィジェット」欄のボタン、またはホーム画面の長押し → ウィジェット →「リミットゲージ」から。
+- **カード（2×2）**: 5時間・週間の両方。横に広げると横並びレイアウトになります
+- **週間リング / 5時間リング（1×1）**
+
+Claude Code で 1 回何か応答させれば値が入ります。
+
+### Windows 側の Claude Code も使う場合
+WSL と Windows の両方で Claude Code を使っているなら、Windows の PowerShell で `pc` フォルダに移動して、setup の最後に表示されるコマンドを実行します:
+```powershell
+node limit-gauge-push.mjs install --url https://limit-gauge-relay.<あなた>.workers.dev --token <トークン>
+```
+
+## 使い方メモ
+- 表示は「残り」（Codex と同じ）。アプリの設定で「使用済み」に切り替え可能。残り 20% 未満で赤くなります。
+- 「通知とロック画面に常時表示」をオンにすると、ロック画面にも出ます（Galaxy はロック画面の通知表示を「詳細」にしておくと見やすい）。
+- Android 16 では「Live Update として表示」もオンにすると、許可された場合ステータスバーのチップにも表示されます（端末側の対応次第）。
+- **反映タイミング**: Claude Code が応答したとき PC から送信 → アプリは 15〜30 分ごと＋アプリを開いたときに取得。
+  claude.ai やモバイルアプリだけで使った分は、次に Claude Code が応答したときに反映されます。
+- リセット時刻を過ぎると自動で「リセット済み」になります（最大 10 分ほど遅れることがあります）。
+- 更新が遅い場合: 設定 → バッテリー → バックグラウンドでの使用制限 で、リミットゲージを「スリープしないアプリ」に入れてください。
+
+## コマンド（PC 側）
+```bash
+node ~/.claude/limit-gauge-push.mjs status       # 設定と、リレーが持っている値を表示
+node ~/.claude/limit-gauge-push.mjs uninstall    # ステータスラインを元に戻す（--purge で設定も削除）
+cd relay && npm run setup -- --new-token          # トークンを作り直す（スマホと各 PC を再設定）
+cd relay && npx wrangler delete                   # リレーを削除
+```
+うまく送られないときは `LIMIT_GAUGE_DEBUG=1` を付けて Claude Code を起動すると `~/.claude/limit-gauge.log` にログが出ます。
+プロジェクトの `.claude/settings.json` に別の `statusLine` があると、そちらが優先されて送信されません。
+
+## リレーの API（自前サーバーに置き換えたい場合）
+- `POST /v1/usage` … `{"captured_at":秒,"five_hour":{"used_percentage":23.5,"resets_at":秒},"seven_day":{...}}`（Claude Code のステータスライン JSON をそのまま送っても可）
+- `GET /v1/usage` … アプリが読む JSON。どちらも `Authorization: Bearer <TOKEN>`
+- アプリの URL 欄にパス付きの URL を入れると、その URL をそのまま GET します（`rate_limits` を含む JSON なら何でも可。Tailscale 経由の自宅サーバーなど）。
+
+## ビルドについて
+- 同梱 APK は Gradle を使わず `android/tools/build-apk.sh`（aapt2 + javac + AOSP の dx + v2 署名）でビルドし、apksigtool で署名を検証済みです。
+- Android Studio では `android/` を開けば Gradle（AGP 8.13.2 / Gradle 8.14.3）でビルドできる構成にしてありますが、Gradle ビルド自体はこちらの環境では実行できていません。
+- `android/keystore/` の鍵で同梱 APK と同じ署名になるので、自分でビルドしたものを上書きインストールできます。**鍵は公開リポジトリに入れないでください**（.gitignore 済み）。
+- テスト: `android/tools/run-logic-tests.sh`（解析ロジック）、`cd relay && npm test`（マージロジック）。
+
+非公式のツールです。Anthropic とは関係ありません。
