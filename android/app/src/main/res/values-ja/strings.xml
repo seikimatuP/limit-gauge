@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">リミットゲージ</string>
+
+    <!-- ウィジェット -->
+    <string name="widget_card_label">Claude リミット</string>
+    <string name="widget_card_desc">Claude Code の5時間・週間リミット</string>
+    <string name="widget_week_label">Claude 週間</string>
+    <string name="widget_week_desc">週間リミットをリング表示</string>
+    <string name="widget_five_label">Claude 5時間</string>
+    <string name="widget_five_desc">5時間リミットをリング表示</string>
+
+    <string name="label_five_hour">5時間</string>
+    <string name="label_weekly">週間</string>
+    <string name="value_left">残り%1$d%%</string>
+    <string name="value_used">%1$d%%使用</string>
+    <string name="value_percent">%1$d%%</string>
+    <string name="gauge_week_left">週間 残り</string>
+    <string name="gauge_week_used">週間 使用</string>
+    <string name="gauge_five_left">5時間 残り</string>
+    <string name="gauge_five_used">5時間 使用</string>
+    <string name="gauge_setup">設定</string>
+
+    <string name="sub_resets_at">%1$sにリセット</string>
+    <plurals name="sub_resets_in_days">
+        <item quantity="other">あと%d日でリセット</item>
+    </plurals>
+    <string name="sub_reset_done">リセット済み</string>
+    <string name="sub_no_data">データなし</string>
+    <string name="sub_setup">タップして設定</string>
+    <string name="as_of">%1$s時点</string>
+
+    <string name="detail_resets">%1$s にリセット（あと%2$s）</string>
+    <string name="rel_days_hours">%1$d日%2$d時間</string>
+    <string name="rel_hours_minutes">%1$d時間%2$d分</string>
+    <string name="rel_minutes">%1$d分</string>
+
+    <!-- ウィジェット選択画面のサンプル表示 -->
+    <string name="preview_as_of">14:32時点</string>
+    <string name="preview_five_value" formatted="false">残り77%</string>
+    <string name="preview_five_sub">18:00にリセット</string>
+    <string name="preview_week_value" formatted="false">残り46%</string>
+    <string name="preview_week_sub">あと5日でリセット</string>
+    <string name="preview_gauge_value" formatted="false">46%</string>
+    <string name="preview_gauge_sub">あと5日でリセット</string>
+
+    <!-- アプリ画面 -->
+    <string name="main_subtitle">Claude Code の利用リミットをホーム画面に</string>
+    <string name="refresh_now">今すぐ更新</string>
+    <string name="refreshing">更新中…</string>
+    <string name="toast_updated">更新しました</string>
+    <string name="status_not_configured">まだ接続されていません。下でリレーのURLとトークンを設定してください。</string>
+    <string name="status_data_time">データ時刻: %1$s（Claude Code の最終応答）</string>
+    <string name="status_fetched">最終確認: %1$s</string>
+    <string name="status_waiting">接続できています。PC の Claude Code が次に応答すると値が表示されます。</string>
+    <string name="status_error">エラー: %1$s</string>
+
+    <string name="section_widgets">ウィジェット</string>
+    <string name="add_card_widget">カード</string>
+    <string name="add_week_widget">週間リング</string>
+    <string name="add_five_widget">5時間リング</string>
+    <string name="widgets_hint">ホーム画面の長押し →「ウィジェット」→「リミットゲージ」からも追加できます。</string>
+    <string name="pin_unsupported">このホームアプリはアプリからのウィジェット追加に対応していません。ホーム画面を長押し →「ウィジェット」→「リミットゲージ」から追加してください。</string>
+
+    <string name="section_connection">接続設定</string>
+    <string name="hint_token">トークン</string>
+    <string name="show_token">トークンを表示</string>
+    <string name="save_and_test">保存して接続テスト</string>
+    <string name="paste_link">セットアップリンクを貼り付け</string>
+    <string name="paste_empty">クリップボードが空です</string>
+    <string name="paste_invalid">セットアップリンクではないようです</string>
+    <string name="link_invalid">セットアップリンクが正しくありません</string>
+    <string name="link_confirm_title">この接続先を使いますか？</string>
+    <string name="link_confirm_message">使用量を次のリレーから読み込みます：\n%1$s</string>
+    <string name="save">保存</string>
+    <string name="err_url_scheme">https:// で始まるURLを入力してください</string>
+    <string name="err_token_empty">トークンを入力してください（空白は不可）</string>
+
+    <string name="section_display">表示</string>
+    <string name="mode_left">残りを表示</string>
+    <string name="mode_used">使用済みを表示</string>
+    <string name="notify_switch">通知とロック画面に常時表示</string>
+    <string name="live_switch">Live Update として表示（Android 16 以降）</string>
+    <string name="live_hint">Android が許可すると、週間リミットがステータスバーのチップに表示されます。ここをタップすると、このアプリの Live Update 設定を開きます。</string>
+    <string name="notif_denied">通知の権限が許可されませんでした</string>
+    <string name="settings_unavailable">設定画面を開けませんでした</string>
+
+    <string name="channel_name">使用量の表示</string>
+    <string name="channel_desc">Claude のリミットを常時表示する通知</string>
+    <string name="notif_title">%1$s %2$s · %3$s %4$s</string>
+    <string name="notif_text">週間: %1$s ／ 5時間: %2$s</string>
+
+    <string name="section_setup">しくみとセットアップ</string>
+    <string name="help_body">1. PC で relay フォルダのセットアップを実行すると、Cloudflare アカウント（無料プラン）に小さな中継サーバーがデプロイされ、Claude Code のステータスラインに送信処理が追加されます。\n2. 表示された QR コードをこのスマホで読み取り「アプリで開く」をタップすると、接続設定が自動で入ります。\n3. Claude Code が応答するたびに5時間・週間リミットの値が中継サーバーに送られ、このアプリが15〜30分ごとに取得します。\n\nclaude.ai やデスクトップ／モバイルアプリだけで使った分は、次に Claude Code が応答したときに反映されます。リセット時刻を過ぎると自動で「リセット済み」に切り替わります。</string>
+    <string name="unofficial_note">非公式アプリです。Anthropic とは関係ありません。Claude のログイン情報は一切扱いません。</string>
+    <string name="version_fmt">バージョン %1$s</string>
+
+    <!-- エラー -->
+    <string name="err_unauthorized">トークンが拒否されました（401）。トークンを確認してください。</string>
+    <string name="err_not_found">そのURLには何もありません（404）。リレーのURLを確認してください。</string>
+    <string name="err_http">リレーが HTTP %1$d を返しました</string>
+    <string name="err_dns">リレーに接続できません。URLと通信状態を確認してください。</string>
+    <string name="err_timeout">リレーへの接続がタイムアウトしました</string>
+    <string name="err_bad_json">リレーの応答を読み取れませんでした</string>
+    <string name="err_bad_url">リレーのURLが正しくありません</string>
+    <string name="err_network">通信エラー（%1$s）</string>
+</resources>

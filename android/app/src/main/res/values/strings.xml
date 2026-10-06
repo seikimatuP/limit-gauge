@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Limit Gauge</string>
+
+    <!-- Widgets -->
+    <string name="widget_title" translatable="false">Claude</string>
+    <string name="widget_card_label">Claude limits</string>
+    <string name="widget_card_desc">Claude Code 5-hour and weekly limits</string>
+    <string name="widget_week_label">Claude weekly</string>
+    <string name="widget_week_desc">Weekly limit as a ring</string>
+    <string name="widget_five_label">Claude 5-hour</string>
+    <string name="widget_five_desc">5-hour limit as a ring</string>
+
+    <string name="label_five_hour">5 hours</string>
+    <string name="label_weekly">Weekly</string>
+    <string name="value_left">%1$d%% left</string>
+    <string name="value_used">%1$d%% used</string>
+    <string name="value_percent">%1$d%%</string>
+    <string name="value_none" translatable="false">—</string>
+    <string name="gauge_week_left">Weekly left</string>
+    <string name="gauge_week_used">Weekly used</string>
+    <string name="gauge_five_left">5h left</string>
+    <string name="gauge_five_used">5h used</string>
+    <string name="gauge_setup">Set up</string>
+
+    <string name="sub_resets_at">Resets %1$s</string>
+    <plurals name="sub_resets_in_days">
+        <item quantity="one">Resets in %d day</item>
+        <item quantity="other">Resets in %d days</item>
+    </plurals>
+    <string name="sub_reset_done">Reset · full limit</string>
+    <string name="sub_no_data">No data yet</string>
+    <string name="sub_setup">Tap to set up</string>
+    <string name="as_of">as of %1$s</string>
+
+    <string name="detail_resets">Resets %1$s (in %2$s)</string>
+    <string name="rel_days_hours">%1$dd %2$dh</string>
+    <string name="rel_hours_minutes">%1$dh %2$dm</string>
+    <string name="rel_minutes">%1$d min</string>
+
+    <!-- Widget previews (sample values shown in the widget picker) -->
+    <string name="preview_as_of">as of 2:32 PM</string>
+    <string name="preview_five_value" formatted="false">77% left</string>
+    <string name="preview_five_sub">Resets 6:00 PM</string>
+    <string name="preview_week_value" formatted="false">46% left</string>
+    <string name="preview_week_sub">Resets in 5 days</string>
+    <string name="preview_gauge_value" formatted="false">46%</string>
+    <string name="preview_gauge_sub">Resets in 5 days</string>
+
+    <!-- App screen -->
+    <string name="main_subtitle">Claude Code usage limits on your home screen</string>
+    <string name="refresh_now">Refresh now</string>
+    <string name="refreshing">Refreshing…</string>
+    <string name="toast_updated">Updated</string>
+    <string name="status_not_configured">Not connected yet. Set the relay URL and token below.</string>
+    <string name="status_data_time">Data as of %1$s (last Claude Code reply)</string>
+    <string name="status_fetched">Last checked %1$s</string>
+    <string name="status_waiting">Connected. Values appear after Claude Code\'s next reply on your PC.</string>
+    <string name="status_error">Error: %1$s</string>
+
+    <string name="section_widgets">Widgets</string>
+    <string name="add_card_widget">Card</string>
+    <string name="add_week_widget">Weekly ring</string>
+    <string name="add_five_widget">5h ring</string>
+    <string name="widgets_hint">You can also long-press the home screen → Widgets → Limit Gauge.</string>
+    <string name="pin_unsupported">This launcher cannot add widgets from apps. Long-press the home screen → Widgets → Limit Gauge.</string>
+
+    <string name="section_connection">Connection</string>
+    <string name="hint_url" translatable="false">https://limit-gauge-relay.xxxx.workers.dev</string>
+    <string name="hint_token">Token</string>
+    <string name="show_token">Show token</string>
+    <string name="save_and_test">Save &amp; test</string>
+    <string name="paste_link">Paste setup link</string>
+    <string name="paste_empty">The clipboard is empty</string>
+    <string name="paste_invalid">That does not look like a setup link</string>
+    <string name="link_invalid">This setup link is not valid</string>
+    <string name="link_confirm_title">Use this relay?</string>
+    <string name="link_confirm_message">Limit Gauge will read your usage from:\n%1$s</string>
+    <string name="save">Save</string>
+    <string name="err_url_scheme">Enter a URL starting with https://</string>
+    <string name="err_token_empty">Enter the token (no spaces)</string>
+
+    <string name="section_display">Display</string>
+    <string name="mode_left">Remaining</string>
+    <string name="mode_used">Used</string>
+    <string name="notify_switch">Show in notifications and on the lock screen</string>
+    <string name="live_switch">Request a Live Update (Android 16+)</string>
+    <string name="live_hint">When Android allows it, the weekly limit shows as a status-bar chip. Tap here to open the Live Update setting for this app.</string>
+    <string name="notif_denied">Notification permission was not granted</string>
+    <string name="settings_unavailable">Could not open settings</string>
+
+    <string name="channel_name">Usage status</string>
+    <string name="channel_desc">Ongoing notification with your Claude limits</string>
+    <string name="notif_title">%1$s %2$s · %3$s %4$s</string>
+    <string name="notif_text">Weekly: %1$s · 5h: %2$s</string>
+
+    <string name="section_setup">How it works</string>
+    <string name="help_body">1. On your PC, run the setup in the relay folder. It deploys a small relay to your Cloudflare account (free plan) and adds a sender to Claude Code\'s status line.\n2. Scan the QR code it shows with this phone and tap \"Open in app\". The connection is filled in for you.\n3. Each time Claude Code replies, its 5-hour and weekly limit values are sent to the relay, and this app picks them up every 15–30 minutes.\n\nUsage from claude.ai or the desktop/mobile apps alone shows up after Claude Code\'s next reply. Once a reset time passes, the widget switches to \"Reset\" by itself.</string>
+    <string name="unofficial_note">Unofficial app. Not affiliated with or endorsed by Anthropic. It never sees your Claude login.</string>
+    <string name="version_fmt">Version %1$s</string>
+
+    <!-- Errors -->
+    <string name="err_unauthorized">The relay rejected the token (401). Check the token.</string>
+    <string name="err_not_found">Nothing at that URL (404). Check the relay URL.</string>
+    <string name="err_http">The relay answered HTTP %1$d</string>
+    <string name="err_dns">Cannot reach the relay host. Check the URL and your connection.</string>
+    <string name="err_timeout">The relay timed out</string>
+    <string name="err_bad_json">Could not read the relay\'s response</string>
+    <string name="err_bad_url">The relay URL is not valid</string>
+    <string name="err_network">Network error (%1$s)</string>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="lg_widget_bg">#FFFAF9F5</color>
+    <color name="lg_card">#FFFFFFFF</color>
+    <color name="lg_text">#FF1F1E1D</color>
+    <color name="lg_text_secondary">#FF6F6B65</color>
+    <color name="lg_track">#FFE7E3DB</color>
+    <color name="lg_accent">#FFD97757</color>
+    <color name="lg_critical">#FFD63B3B</color>
+    <color name="lg_icon_bg">#FFD97757</color>
+</resources>

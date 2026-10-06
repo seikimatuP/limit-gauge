@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A simple gauge glyph (arc + needle). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M4.5,15.5 A7.5,7.5 0 1,1 19.5,15.5"
+        android:strokeWidth="2.4"
+        android:strokeColor="@color/lg_accent"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M12,15.5 L15.8,10.3"
+        android:strokeWidth="2.4"
+        android:strokeColor="@color/lg_accent"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="@color/lg_accent"
+        android:pathData="M10.1,15.5 a1.9,1.9 0 1,0 3.8,0 a1.9,1.9 0 1,0 -3.8,0" />
+</vector>

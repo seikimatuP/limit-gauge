@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="widget_padding">14dp</dimen>
+    <dimen name="widget_bar_height">6dp</dimen>
+    <dimen name="widget_bar_radius">3dp</dimen>
+    <dimen name="card_radius">20dp</dimen>
+</resources>

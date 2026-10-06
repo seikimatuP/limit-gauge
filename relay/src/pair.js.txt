@@ -1,0 +1,42 @@
+// Pairing page logic. The token travels only in the URL fragment (#t=...), which browsers never
+// send to the server.
+(function () {
+  "use strict";
+  var PACKAGE = "com.ynozue.limitgauge";
+  var params = new URLSearchParams(location.hash.slice(1));
+  var token = params.get("t");
+  var relay = params.get("u") || location.origin;
+
+  function show(id) {
+    document.getElementById(id).classList.remove("hidden");
+  }
+
+  if (!token) {
+    show("missing");
+    return;
+  }
+
+  var query = "u=" + encodeURIComponent(relay) + "&t=" + encodeURIComponent(token);
+  document.getElementById("m-url").textContent = relay;
+  document.getElementById("m-token").textContent = token;
+  show("manual");
+
+  if (/Android/i.test(navigator.userAgent)) {
+    document.getElementById("open-intent").href =
+      "intent://config?" + query + "#Intent;scheme=limitgauge;package=" + PACKAGE + ";end";
+    document.getElementById("open-scheme").href = "limitgauge://config?" + query;
+    show("phone");
+    return;
+  }
+
+  show("pc");
+  var box = document.getElementById("qr");
+  try {
+    var qr = qrcode(0, "M");
+    qr.addData(location.href);
+    qr.make();
+    box.innerHTML = qr.createSvgTag(6, 4);
+  } catch (e) {
+    box.textContent = "QR コードを表示できませんでした。「手動で入力する」の値を使ってください。";
+  }
+})();
