@@ -55,6 +55,12 @@ public final class LogicTest {
         boolean threw = false;
         try { UsageData.parse("not json"); } catch (Exception ex) { threw = true; }
         eq("bad json throws", true, threw);
+        // A hostile relay must not push reset times that overflow millisecond arithmetic (alarm loop).
+        eq("absurd numeric resets_at -> null", true,
+                UsageData.parse("{\"five_hour\":{\"used_percentage\":5,\"resets_at\":1e19}}").fiveHour == null);
+        eq("absurd ISO resets_at -> null", true,
+                UsageData.parse("{\"five_hour\":{\"used_percentage\":5,\"resets_at\":\"+999999999-12-31T23:59:59Z\"}}").fiveHour == null);
+        eq("year 2099 still accepted", 4_099_766_400L, UsageData.epochSeconds(4_099_766_400L));
 
         // --- SetupLink ---
         SetupLink a = SetupLink.parse("limitgauge://config?u=https%3A%2F%2Flimit-gauge-relay.foo.workers.dev&t=AbC_-123");
@@ -84,6 +90,27 @@ public final class LogicTest {
         eq("valid url", true, SetupLink.isValidUrl("https://a.dev"));
         eq("invalid url no host", false, SetupLink.isValidUrl("https://"));
         eq("invalid url scheme", false, SetupLink.isValidUrl("a.dev"));
+
+        // --- plain http only off the public internet; no user@host ---
+        eq("http public host", false, SetupLink.isValidUrl("http://limit-gauge-relay.foo.workers.dev"));
+        eq("http public IPv4", false, SetupLink.isValidUrl("http://8.8.8.8"));
+        eq("http public IPv6", false, SetupLink.isValidUrl("http://[2001:db8::1]:8787"));
+        eq("http lookalike private", false, SetupLink.isValidUrl("http://10.evil.example"));
+        eq("http Tailscale CGNAT", true, SetupLink.isValidUrl("http://100.64.0.7:8787"));
+        eq("http LAN", true, SetupLink.isValidUrl("http://192.168.1.20:8787"));
+        eq("http 172.16/12", true, SetupLink.isValidUrl("http://172.20.0.5"));
+        eq("http outside 172.16/12", false, SetupLink.isValidUrl("http://172.32.0.5"));
+        eq("http MagicDNS", true, SetupLink.isValidUrl("http://box.tail1234.ts.net:8787"));
+        eq("http single label", true, SetupLink.isValidUrl("http://homeserver:8787"));
+        eq("http localhost", true, SetupLink.isValidUrl("http://localhost:8787"));
+        eq("http Tailscale IPv6", true, SetupLink.isValidUrl("http://[fd7a:115c:a1e0::1]:8787"));
+        eq("userinfo rejected", false, SetupLink.isValidUrl("https://me.workers.dev@evil.example"));
+        eq("pair link with userinfo", null, SetupLink.parse("https://me.workers.dev@evil.example/pair#t=x"));
+        eq("deep link to public http", null, SetupLink.parse("limitgauge://config?u=http%3A%2F%2Fevil.example&t=x"));
+
+        eq("display origin", "https://x.workers.dev", SetupLink.displayOrigin("https://x.workers.dev/"));
+        eq("display origin port", "http://100.64.0.7:8787", SetupLink.displayOrigin("http://100.64.0.7:8787"));
+        eq("display origin path", "https://x.dev/usage.json", SetupLink.displayOrigin("https://x.dev/usage.json"));
 
         System.out.println(passed + " passed, " + failed + " failed");
         if (failed > 0) System.exit(1);

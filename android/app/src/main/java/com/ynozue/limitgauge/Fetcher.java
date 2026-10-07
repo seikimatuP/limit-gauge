@@ -16,6 +16,7 @@ import java.net.UnknownHostException;
 /** Reads the usage JSON from the relay. */
 final class Fetcher {
     private static final int MAX_BODY = 256 * 1024;
+    private static final long TOTAL_TIMEOUT_NS = 30_000_000_000L;
 
     static final class HttpException extends IOException {
         final int code;
@@ -49,6 +50,7 @@ final class Fetcher {
     }
 
     private static String readAll(InputStream in) throws IOException {
+        long deadline = System.nanoTime() + TOTAL_TIMEOUT_NS;
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buf = new byte[8192];
@@ -56,6 +58,8 @@ final class Fetcher {
             while ((n = in.read(buf)) != -1) {
                 out.write(buf, 0, n);
                 if (out.size() > MAX_BODY) throw new IOException("response too large");
+                // The read timeout is per read; this stops a relay that drips bytes while we hold the refresh lock.
+                if (System.nanoTime() - deadline > 0) throw new SocketTimeoutException("response took too long");
             }
             return new String(out.toByteArray(), "UTF-8");
         } finally {
@@ -64,7 +68,7 @@ final class Fetcher {
     }
 
     /** A short, user-facing explanation of a failed fetch. */
-    static String describe(Context c, Exception e) {
+    static String describe(Context c, Throwable e) {
         if (e instanceof HttpException) {
             int code = ((HttpException) e).code;
             if (code == 401 || code == 403) return c.getString(R.string.err_unauthorized);
@@ -73,10 +77,9 @@ final class Fetcher {
         }
         if (e instanceof UnknownHostException) return c.getString(R.string.err_dns);
         if (e instanceof SocketTimeoutException) return c.getString(R.string.err_timeout);
-        if (e instanceof JSONException) return c.getString(R.string.err_bad_json);
+        if (e instanceof JSONException || e instanceof StackOverflowError) return c.getString(R.string.err_bad_json);
         if (e instanceof MalformedURLException) return c.getString(R.string.err_bad_url);
-        String detail = e.getClass().getSimpleName();
-        if (e.getMessage() != null) detail = detail + ": " + e.getMessage();
-        return c.getString(R.string.err_network, detail);
+        // Only the type: the message can carry text the server chose (e.g. a fake status line).
+        return c.getString(R.string.err_network, e.getClass().getSimpleName());
     }
 }

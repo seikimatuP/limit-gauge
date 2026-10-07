@@ -61,12 +61,50 @@ public final class SetupLink {
     static boolean isValidUrl(String url) {
         if (url == null) return false;
         String u = url.trim();
-        if (!u.regionMatches(true, 0, "https://", 0, 8) && !u.regionMatches(true, 0, "http://", 0, 7)) return false;
+        boolean https = u.regionMatches(true, 0, "https://", 0, 8);
+        if (!https && !u.regionMatches(true, 0, "http://", 0, 7)) return false;
         try {
             URI parsed = new URI(u);
-            return parsed.getHost() != null && !parsed.getHost().isEmpty();
+            String host = parsed.getHost();
+            // "user@host" makes the visible start of the URL differ from where it connects.
+            if (host == null || host.isEmpty() || parsed.getRawUserInfo() != null) return false;
+            // Plain http would send the token in the clear, so it is only for relays off the internet.
+            return https || isLocalHost(host);
         } catch (URISyntaxException e) {
             return false;
+        }
+    }
+
+    /** True for LAN and Tailscale addresses: private IPv4/IPv6 ranges, localhost, *.local, *.ts.net. */
+    static boolean isLocalHost(String host) {
+        String h = host.toLowerCase(Locale.ROOT);
+        if (h.startsWith("[") && h.endsWith("]")) h = h.substring(1, h.length() - 1);
+        if (h.equals("localhost") || h.endsWith(".localhost") || h.endsWith(".local") || h.endsWith(".ts.net")) {
+            return true;
+        }
+        if (h.indexOf('.') < 0 && h.indexOf(':') < 0) return true; // single-label LAN / MagicDNS name
+        String[] p = h.split("\\.", -1);
+        if (p.length == 4) {
+            int[] o = new int[4];
+            for (int i = 0; i < 4; i++) {
+                if (!p[i].matches("\\d{1,3}")) return false;
+                o[i] = Integer.parseInt(p[i]);
+            }
+            int a = o[0], b = o[1];
+            return a == 10 || a == 127 || (a == 172 && b >= 16 && b <= 31) || (a == 192 && b == 168)
+                    || (a == 169 && b == 254) || (a == 100 && b >= 64 && b <= 127);
+        }
+        return h.equals("::1") || h.matches("f[cd][0-9a-f]{2}:.*") || h.matches("fe[89ab][0-9a-f]:.*");
+    }
+
+    /** What the confirmation dialog shows: scheme, host, port and path, so an http downgrade is visible. */
+    static String displayOrigin(String url) {
+        try {
+            URI u = new URI(url.trim());
+            String path = u.getRawPath() == null || u.getRawPath().equals("/") ? "" : u.getRawPath();
+            return u.getScheme() + "://" + u.getHost() + (u.getPort() == -1 ? "" : ":" + u.getPort()) + path;
+        } catch (URISyntaxException | RuntimeException e) {
+            return url;
         }
     }
 

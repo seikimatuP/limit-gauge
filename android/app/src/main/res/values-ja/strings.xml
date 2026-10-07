@@ -71,9 +71,9 @@
     <string name="paste_invalid">セットアップリンクではないようです</string>
     <string name="link_invalid">セットアップリンクが正しくありません</string>
     <string name="link_confirm_title">この接続先を使いますか？</string>
-    <string name="link_confirm_message">使用量を次のリレーから読み込みます：\n%1$s</string>
+    <string name="link_confirm_message">使用量を次のリレーから読み込みます：\n%1$s\n\n今の接続設定はこの内容に置き換わります。</string>
     <string name="save">保存</string>
-    <string name="err_url_scheme">https:// で始まるURLを入力してください</string>
+    <string name="err_url_scheme">https:// で始まるURLを入力してください（http:// は LAN や Tailscale のアドレスだけ使えます）</string>
     <string name="err_token_empty">トークンを入力してください（空白は不可）</string>
 
     <string name="section_display">表示</string>

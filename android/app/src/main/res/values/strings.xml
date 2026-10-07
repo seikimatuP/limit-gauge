@@ -75,9 +75,9 @@
     <string name="paste_invalid">That does not look like a setup link</string>
     <string name="link_invalid">This setup link is not valid</string>
     <string name="link_confirm_title">Use this relay?</string>
-    <string name="link_confirm_message">Limit Gauge will read your usage from:\n%1$s</string>
+    <string name="link_confirm_message">Limit Gauge will read your usage from:\n%1$s\n\nThis replaces the current connection settings.</string>
     <string name="save">Save</string>
-    <string name="err_url_scheme">Enter a URL starting with https://</string>
+    <string name="err_url_scheme">Enter a URL starting with https:// (http:// works only for LAN or Tailscale addresses)</string>
     <string name="err_token_empty">Enter the token (no spaces)</string>
 
     <string name="section_display">Display</string>

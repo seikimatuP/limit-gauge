@@ -95,8 +95,16 @@ public final class UsageData {
         return new Window(used, resets, captured);
     }
 
+    /** 2100-01-01. Later values are garbage, and their millisecond form would overflow a long. */
+    static final long MAX_EPOCH_S = 4_102_444_800L;
+
     /** Accepts epoch seconds, epoch milliseconds, numeric strings or ISO-8601 strings. Returns 0 when unusable. */
     static long epochSeconds(Object v) {
+        long s = rawEpochSeconds(v);
+        return s > MAX_EPOCH_S ? 0L : s;
+    }
+
+    private static long rawEpochSeconds(Object v) {
         if (v == null || v == JSONObject.NULL) return 0L;
         double d;
         if (v instanceof Number) {

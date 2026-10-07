@@ -28,7 +28,9 @@ final class Refresher {
                             .remove(Prefs.ERROR)
                             .remove(Prefs.ERROR_AT)
                             .commit();
-                } catch (Exception e) {
+                } catch (Exception | StackOverflowError e) {
+                    // Deeply nested JSON from a hostile relay overflows org.json's recursive parser; an
+                    // uncaught Error here would crash the app on every refresh.
                     error = Fetcher.describe(c, e);
                     Prefs.get(c).edit()
                             .putString(Prefs.ERROR, error)

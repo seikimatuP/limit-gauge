@@ -15,7 +15,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Insets;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -391,21 +390,25 @@ public class MainActivity extends Activity {
             toast(getString(R.string.paste_invalid));
             return;
         }
-        applySettings(link.url, link.token);
+        // Any page or app can put a link on the clipboard, so this is confirmed like a deep link.
+        confirmLink(link);
     }
 
     /** limitgauge://config?u=...&t=... from the pairing page. Always confirmed before saving. */
     private void handleLink(Intent intent) {
         if (intent == null || !Intent.ACTION_VIEW.equals(intent.getAction()) || intent.getData() == null) return;
-        final SetupLink link = SetupLink.parse(intent.getData().toString());
+        SetupLink link = SetupLink.parse(intent.getData().toString());
         if (link == null) {
             toast(getString(R.string.link_invalid));
             return;
         }
-        String host = Uri.parse(link.url).getHost();
+        confirmLink(link);
+    }
+
+    private void confirmLink(final SetupLink link) {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.link_confirm_title)
-                .setMessage(getString(R.string.link_confirm_message, host == null ? link.url : host))
+                .setMessage(getString(R.string.link_confirm_message, SetupLink.displayOrigin(link.url)))
                 .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
