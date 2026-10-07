@@ -19,9 +19,9 @@ PC: Claude Code ──(ステータスラインの rate_limits)──> limit-gau
 
 ## 中身
 
-| フォルダ | 内容 |
+| 場所 | 内容 |
 |---|---|
-| `dist/LimitGauge-1.0.0.apk` | ビルド済み APK（minSdk 31 / targetSdk 36、署名済み） |
+| [Releases](https://github.com/seikimatuP/limit-gauge/releases/latest) | ビルド済み APK（minSdk 31 / targetSdk 36、署名済み） |
 | `android/` | アプリのソース（Java、AndroidX 不使用）。Android Studio でそのまま開けます |
 | `relay/` | 中継用 Cloudflare Worker（Durable Object/SQLite）と `npm run setup` |
 | `pc/limit-gauge-push.mjs` | Claude Code のステータスラインに挟む送信スクリプト（Node 18+、依存なし） |
@@ -29,7 +29,7 @@ PC: Claude Code ──(ステータスラインの rate_limits)──> limit-gau
 ## セットアップ（初回 10 分ほど）
 
 ### 1. スマホにアプリを入れる
-`dist/LimitGauge-1.0.0.apk` をスマホで開いてインストールします。
+[Releases](https://github.com/seikimatuP/limit-gauge/releases/latest) から `LimitGauge-<バージョン>.apk` をスマホでダウンロードして開き、インストールします。
 - 「提供元不明のアプリ」の許可を求められたら、開いたアプリ（マイファイル／ブラウザ等）に許可してください。
 - Galaxy で **自動ブロッカー（Auto Blocker）** がオンだとインストールできません。設定 → セキュリティとプライバシー → 自動ブロッカー を一時的にオフにしてください。
 
@@ -90,9 +90,13 @@ cd relay && npx wrangler delete                   # リレーを削除
 - アプリの URL 欄にパス付きの URL を入れると、その URL をそのまま GET します（`rate_limits` を含む JSON なら何でも可。Tailscale 経由の自宅サーバーなど）。
 
 ## ビルドについて
-- 同梱 APK は Gradle を使わず `android/tools/build-apk.sh`（aapt2 + javac + AOSP の dx + v2 署名）でビルドし、apksigtool で署名を検証済みです。
+- Releases の APK は Gradle を使わず `android/tools/build-apk.sh`（aapt2 + javac + AOSP の dx + v2 署名）でビルドし、apksigtool で署名を検証済みです。出力先は `dist/` です。
 - Android Studio では `android/` を開けば Gradle（AGP 8.13.2 / Gradle 8.14.3）でビルドできる構成にしてありますが、Gradle ビルド自体はこちらの環境では実行できていません。
-- `android/keystore/` の鍵で同梱 APK と同じ署名になるので、自分でビルドしたものを上書きインストールできます。**鍵は公開リポジトリに入れないでください**（.gitignore 済み）。
+- Releases の APK は作者の鍵で署名しています（鍵はリポジトリに含めていません）。自分でビルドした APK は署名が異なるため Releases 版の上から上書きインストールできません。入れ替えるときは一度アンインストールしてください。
+- 自分の鍵を使う場合は `android/keystore/` に `keystore.properties`（`storeFile` / `storePassword` / `keyAlias` / `keyPassword`）と鍵ファイルを置きます。**鍵は公開リポジトリに入れないでください**（.gitignore 済み）。
 - テスト: `android/tools/run-logic-tests.sh`（解析ロジック）、`cd relay && npm test`（マージロジック）。
+
+## ライセンス
+[MIT License](LICENSE)。`relay/src/vendor/qrcode-1.4.4.js.txt` は Kazuhiko Arase 氏の QR Code Generator（MIT License）です。
 
 非公式のツールです。Anthropic とは関係ありません。
