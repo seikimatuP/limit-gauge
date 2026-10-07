@@ -42,7 +42,9 @@ npm run setup
 `setup` が次を順に行います。
 1. Cloudflare ログイン（未ログインならブラウザが開きます）
 2. `limit-gauge-relay` Worker をデプロイ
-3. ランダムなトークンを作って Worker のシークレット `TOKEN` に設定（`relay/.relay.json` に保存）
+3. ランダムなトークンを 2 つ作って Worker のシークレットに設定（`relay/.relay.json` に保存）
+   - `TOKEN`: PC 用（書き込みと読み取り）
+   - `TOKEN_READ`: スマホ用（読み取りのみ。スマホから漏れても値の書き換えはできません）
 4. ペアリングページ（QR コード）をブラウザで開く
 5. この環境の `~/.claude/settings.json` に送信処理を追加（確認あり）
 
@@ -62,8 +64,10 @@ Claude Code で 1 回何か応答させれば値が入ります。
 ### Windows 側の Claude Code も使う場合
 WSL と Windows の両方で Claude Code を使っているなら、Windows の PowerShell で `pc` フォルダに移動して、setup の最後に表示されるコマンドを実行します:
 ```powershell
-node limit-gauge-push.mjs install --url https://limit-gauge-relay.<あなた>.workers.dev --token <トークン>
+node limit-gauge-push.mjs install --url https://limit-gauge-relay.<あなた>.workers.dev --token-stdin
 ```
+「トークンを貼り付けて」と聞かれたら、`relay/.relay.json` の `token` の値を貼り付けます。
+トークンをコマンドラインに直接書くと、PowerShell の履歴やプロセス一覧に残るので避けてください。
 
 ## 使い方メモ
 - 表示は「残り」（Codex と同じ）。アプリの設定で「使用済み」に切り替え可能。残り 20% 未満で赤くなります。
@@ -78,7 +82,7 @@ node limit-gauge-push.mjs install --url https://limit-gauge-relay.<あなた>.wo
 ```bash
 node ~/.claude/limit-gauge-push.mjs status       # 設定と、リレーが持っている値を表示
 node ~/.claude/limit-gauge-push.mjs uninstall    # ステータスラインを元に戻す（--purge で設定も削除）
-cd relay && npm run setup -- --new-token          # トークンを作り直す（スマホと各 PC を再設定）
+cd relay && npm run setup -- --new-token          # 2 つのトークンを作り直す（スマホと各 PC を再設定）
 cd relay && npx wrangler delete                   # リレーを削除
 ```
 うまく送られないときは `LIMIT_GAUGE_DEBUG=1` を付けて Claude Code を起動すると `~/.claude/limit-gauge.log` にログが出ます。
@@ -86,8 +90,9 @@ cd relay && npx wrangler delete                   # リレーを削除
 
 ## リレーの API（自前サーバーに置き換えたい場合）
 - `POST /v1/usage` … `{"captured_at":秒,"five_hour":{"used_percentage":23.5,"resets_at":秒},"seven_day":{...}}`（Claude Code のステータスライン JSON をそのまま送っても可）
-- `GET /v1/usage` … アプリが読む JSON。どちらも `Authorization: Bearer <TOKEN>`
+- `GET /v1/usage` … アプリが読む JSON。どちらも `Authorization: Bearer <TOKEN>`。GET は `TOKEN_READ` でも可（`TOKEN_READ` で POST すると 403）
 - アプリの URL 欄にパス付きの URL を入れると、その URL をそのまま GET します（`rate_limits` を含む JSON なら何でも可。Tailscale 経由の自宅サーバーなど）。
+- `http://` が使えるのは LAN や Tailscale のアドレス（プライベート IP、`100.64.0.0/10`、`*.ts.net`、`localhost` など）だけです。インターネット上のサーバーは `https://` にしてください（トークンが平文で流れるのを防ぐため）。
 
 ## ビルドについて
 - Releases の APK は Gradle を使わず `android/tools/build-apk.sh`（aapt2 + javac + AOSP の dx + v2 署名）でビルドし、apksigtool で署名を検証済みです。出力先は `dist/` です。
