@@ -3,9 +3,13 @@
 (function () {
   "use strict";
   var PACKAGE = "com.ynozue.limitgauge";
+  var RELEASES = "https://github.com/seikimatuP/limit-gauge/releases/latest";
+  var href = location.href;
   var params = new URLSearchParams(location.hash.slice(1));
   var token = params.get("t");
   var relay = params.get("u") || location.origin;
+  // Keep the token out of the address bar and browser history (which may sync to other devices).
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
 
   function show(id) {
     document.getElementById(id).classList.remove("hidden");
@@ -22,9 +26,10 @@
   show("manual");
 
   if (/Android/i.test(navigator.userAgent)) {
+    // Only the package-pinned intent: a bare limitgauge:// link could be claimed by any installed app.
     document.getElementById("open-intent").href =
-      "intent://config?" + query + "#Intent;scheme=limitgauge;package=" + PACKAGE + ";end";
-    document.getElementById("open-scheme").href = "limitgauge://config?" + query;
+      "intent://config?" + query + "#Intent;scheme=limitgauge;package=" + PACKAGE +
+      ";S.browser_fallback_url=" + encodeURIComponent(RELEASES) + ";end";
     show("phone");
     return;
   }
@@ -33,7 +38,7 @@
   var box = document.getElementById("qr");
   try {
     var qr = qrcode(0, "M");
-    qr.addData(location.href);
+    qr.addData(href);
     qr.make();
     box.innerHTML = qr.createSvgTag(6, 4);
   } catch (e) {

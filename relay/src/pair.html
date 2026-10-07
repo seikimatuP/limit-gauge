@@ -23,7 +23,6 @@
   #qr svg { width: 264px; height: 264px; max-width: 100%; }
   .btn { display: block; text-align: center; background: var(--accent); color: #fff; text-decoration: none;
          font-weight: 600; padding: 14px 16px; border-radius: 12px; margin-top: 12px; }
-  .btn.secondary { background: transparent; color: var(--fg); border: 1px solid var(--line); }
   details { margin-top: 20px; }
   summary { cursor: pointer; color: var(--muted); font-size: 14px; }
   code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; word-break: break-all; }
@@ -45,13 +44,12 @@
   <section id="phone" class="card hidden">
     <p><strong>リミットゲージに接続設定を送ります。</strong></p>
     <a id="open-intent" class="btn" href="#">アプリで開く</a>
-    <a id="open-scheme" class="btn secondary" href="#">開かない場合はこちら</a>
-    <p class="muted">アプリ（APK）を先にインストールしておいてください。どちらのボタンでも開かない場合は、下の「手動で入力する」の値をアプリに入力してください。</p>
+    <p class="muted">アプリ（APK）を先にインストールしておいてください。未インストールのときはダウンロードページが開きます。ボタンで開かない場合は、下の「手動で入力する」の値をアプリに入力してください。</p>
   </section>
 
   <section id="missing" class="card hidden">
     <p><strong>このリンクにはトークンが含まれていません。</strong></p>
-    <p class="muted">PC で <code>npm run setup</code> を実行したときに表示された URL をそのまま開いてください。</p>
+    <p class="muted">PC で <code>npm run setup</code> を実行したときに表示された URL をそのまま開いてください。このページは開いた直後にアドレスバーからトークンを消すので、再読み込みした場合もその URL を開き直してください。</p>
   </section>
 
   <details id="manual" class="hidden">
