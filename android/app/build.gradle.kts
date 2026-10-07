@@ -5,7 +5,7 @@ plugins {
 }
 
 // Personal signing key (keystore/keystore.properties + keystore/limitgauge.p12). Using the same key as
-// the prebuilt dist/LimitGauge-*.apk lets a Gradle build install over it without uninstalling.
+// the APK published on GitHub Releases lets a Gradle build install over it without uninstalling.
 val keystoreProps = Properties().apply {
     val file = rootProject.file("keystore/keystore.properties")
     if (file.exists()) file.inputStream().use { load(it) }

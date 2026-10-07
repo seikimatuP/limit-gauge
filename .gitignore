@@ -1,0 +1,6 @@
+# Built APKs (android/tools/build-apk.sh writes here); distributed via GitHub Releases instead.
+dist/
+# Local work logs; they reference the maintainer's own environment.
+docs/work_logs/
+# Windows "downloaded from the internet" metadata copied into WSL.
+*:Zone.Identifier
