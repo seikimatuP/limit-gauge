@@ -8,10 +8,12 @@
 //      output unchanged — or prints a short default line if you had none;
 //   2. when the limits changed, sends them to the relay from a detached background process, so the
 //      status line never waits on the network.
-// No Claude credentials are read or sent: only the two percentages and their reset times.
+// No Claude credentials are read or sent: only the two percentages, their reset times and a short
+// source label ("WSL", "Windows", "macOS" or "Linux" unless you pass --source).
 //
 // Commands (Node 18+, no dependencies):
-//   node limit-gauge-push.mjs install --url <relay url> --token <token>   hook into ~/.claude/settings.json
+//   node limit-gauge-push.mjs install --url <relay url> --token-stdin    hook into ~/.claude/settings.json
+//                                                                         (paste the token when asked)
 //   node limit-gauge-push.mjs uninstall [--purge]                          put the previous status line back
 //   node limit-gauge-push.mjs status                                       show config and what the relay holds
 //   node limit-gauge-push.mjs                                              status line mode (run by Claude Code)
@@ -20,6 +22,7 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
 
 const SELF = fileURLToPath(import.meta.url);
@@ -47,11 +50,23 @@ function readJson(file) {
   }
 }
 
+/**
+ * Writes via a temp file and rename. An existing file keeps its permissions (a 0600 settings.json
+ * stays 0600) and a symlinked file is written through the link instead of being replaced.
+ */
 function writeJsonAtomic(file, data, mode) {
-  const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(data, null, 2) + "\n", mode ? { mode } : undefined);
+  let target = file;
+  let keepMode = mode;
   try {
-    fs.renameSync(tmp, file);
+    target = fs.realpathSync(file);
+    if (keepMode == null) keepMode = fs.statSync(target).mode & 0o777;
+  } catch {}
+  const tmp = `${target}.${process.pid}.${Date.now()}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2) + "\n", keepMode == null ? undefined : { mode: keepMode });
+  try {
+    // The mode passed to writeFileSync is reduced by the umask.
+    if (keepMode != null) fs.chmodSync(tmp, keepMode);
+    fs.renameSync(tmp, target);
   } catch (e) {
     try {
       fs.unlinkSync(tmp);
@@ -70,8 +85,54 @@ function endpointFor(base) {
   return u.toString();
 }
 
+/** A label that tells your machines apart without sending the host name (often a real name). */
 function defaultSource() {
-  return `${os.hostname()}${IS_WSL ? " (WSL)" : ""}`.slice(0, 64);
+  if (IS_WSL) return "WSL";
+  return { win32: "Windows", darwin: "macOS" }[process.platform] || "Linux";
+}
+
+/** Earlier versions defaulted to the host name; treat that like "not chosen". */
+function isLegacyDefaultSource(source) {
+  return typeof source === "string" && source.startsWith(os.hostname());
+}
+
+/** https anywhere; plain http only to hosts that are not on the public internet (LAN, Tailscale). */
+function isAllowedRelayUrl(text) {
+  let u;
+  try {
+    u = new URL(text);
+  } catch {
+    return false;
+  }
+  if (u.username || u.password || !u.hostname) return false;
+  if (u.protocol === "https:") return true;
+  return u.protocol === "http:" && isLocalHost(u.hostname);
+}
+
+function isLocalHost(host) {
+  const h = host.toLowerCase().replace(/^\[|\]$/g, "");
+  if (h === "localhost" || h.endsWith(".localhost") || h.endsWith(".local") || h.endsWith(".ts.net")) return true;
+  if (!h.includes(".") && !h.includes(":")) return true; // single-label LAN / MagicDNS name
+  const v4 = h.match(/^(\d{1,3})\.(\d{1,3})\.\d{1,3}\.\d{1,3}$/);
+  if (v4) {
+    const [a, b] = [Number(v4[1]), Number(v4[2])];
+    return a === 10 || a === 127 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) ||
+      (a === 169 && b === 254) || (a === 100 && b >= 64 && b <= 127);
+  }
+  return h === "::1" || /^f[cd][0-9a-f]{2}:/.test(h) || /^fe[89ab][0-9a-f]:/.test(h);
+}
+
+/** The token from --token-stdin / LIMIT_GAUGE_TOKEN keeps it out of the process list and shell history. */
+async function readTokenArg(args) {
+  if (typeof args.token === "string") return args.token.trim();
+  if (args["token-stdin"]) {
+    if (!process.stdin.isTTY) return (await readStdin()).trim();
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const answer = await rl.question("トークンを貼り付けて Enter を押してください: ");
+    rl.close();
+    return answer.trim();
+  }
+  return (process.env.LIMIT_GAUGE_TOKEN || "").trim();
 }
 
 function debug(msg) {
@@ -397,9 +458,14 @@ async function checkRelay(config) {
 
 async function install(args) {
   const url = typeof args.url === "string" ? args.url.trim() : "";
-  const token = typeof args.token === "string" ? args.token.trim() : "";
-  if (!/^https?:\/\/[^/\s]+/i.test(url) || !token || /\s/.test(token)) {
-    console.error("使い方: node limit-gauge-push.mjs install --url https://limit-gauge-relay.<you>.workers.dev --token <token>");
+  if (!isAllowedRelayUrl(url)) {
+    console.error("使い方: node limit-gauge-push.mjs install --url https://limit-gauge-relay.<you>.workers.dev --token-stdin");
+    console.error("  URL は https:// で始めてください（http:// は LAN や Tailscale のアドレスだけ使えます）。");
+    process.exit(2);
+  }
+  const token = await readTokenArg(args);
+  if (!token || /\s/.test(token)) {
+    console.error("✗ トークンが空か、空白を含んでいます。--token-stdin で貼り付けてください。");
     process.exit(2);
   }
   fs.mkdirSync(CLAUDE_DIR, { recursive: true });
@@ -419,7 +485,12 @@ async function install(args) {
   const config = {
     url,
     token,
-    source: typeof args.source === "string" ? args.source.slice(0, 64) : previous.source || defaultSource(),
+    source:
+      typeof args.source === "string"
+        ? args.source.slice(0, 64)
+        : previous.source && !isLegacyDefaultSource(previous.source)
+          ? previous.source
+          : defaultSource(),
     wrappedCommand: wrapped,
     wrappedShell: previous.wrappedShell ?? null,
   };
