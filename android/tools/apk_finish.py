@@ -6,13 +6,17 @@ Takes the resource APK produced by `aapt2 link` plus a classes.dex, then
      and every stored entry 4-byte aligned (what zipalign does), and
   2. signs it with APK Signature Scheme v2 (RSA PKCS#1 v1.5 + SHA-256).
 
-Usage: apk_finish.py BASE_APK CLASSES_DEX KEYSTORE_P12 STOREPASS OUT_APK
+Usage: APK_STOREPASS=... apk_finish.py BASE_APK CLASSES_DEX KEYSTORE_P12 OUT_APK
+
+The keystore password comes from the APK_STOREPASS environment variable, so it does not
+appear in the process list. (The old form with STOREPASS as the 4th argument still works.)
 
 Requires the `cryptography` package. The spec this implements:
 https://source.android.com/docs/security/features/apksigning/v2
 """
 import hashlib
 import io
+import os
 import struct
 import sys
 import zipfile
@@ -125,9 +129,15 @@ def sign_v2(apk: bytes, key, cert_der: bytes) -> bytes:
 
 
 def main(argv):
-    if len(argv) != 6:
+    if len(argv) == 5:
+        base_apk, dex_path, keystore, out_path = argv[1:]
+        storepass = os.environ.get("APK_STOREPASS", "")
+        if not storepass:
+            raise SystemExit("set APK_STOREPASS to the keystore password")
+    elif len(argv) == 6:
+        base_apk, dex_path, keystore, storepass, out_path = argv[1:]
+    else:
         raise SystemExit(__doc__)
-    base_apk, dex_path, keystore, storepass, out_path = argv[1:]
     with open(keystore, "rb") as f:
         key, cert, _ = pkcs12.load_key_and_certificates(f.read(), storepass.encode())
     if key is None or cert is None:

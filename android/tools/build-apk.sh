@@ -60,5 +60,6 @@ java -jar "$DX_JAR" --dex --min-sdk-version=26 --output="$OUT/classes.dex" "$OUT
 
 echo "== align + sign (APK Signature Scheme v2)"
 mkdir -p "$HERE/../dist"
-"$PYTHON" "$HERE/tools/apk_finish.py" "$OUT/resources.apk" "$OUT/classes.dex" "$KEYSTORE" "$STOREPASS" \
+# The password goes through the environment, not argv, so other users cannot see it in ps.
+APK_STOREPASS="$STOREPASS" "$PYTHON" "$HERE/tools/apk_finish.py" "$OUT/resources.apk" "$OUT/classes.dex" "$KEYSTORE" \
   "$HERE/../dist/LimitGauge-$VERSION_NAME.apk"
