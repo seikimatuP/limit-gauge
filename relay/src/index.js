@@ -1,9 +1,12 @@
 // Limit Gauge relay: receives Claude Code rate-limit values from your PC and serves them to the
 // Android widget. One SQLite-backed Durable Object per feed keeps the latest state (free plan OK).
 //
-//   POST /v1/usage[/<feed>]   (Bearer TOKEN)  report from limit-gauge-push.mjs
-//   GET  /v1/usage[/<feed>]   (Bearer TOKEN)  current state for the app
-//   GET  /pair#t=<token>                       pairing page (QR on PC, "open in app" on Android)
+//   POST /v1/usage[/<feed>]   (Bearer TOKEN)               report from limit-gauge-push.mjs
+//   GET  /v1/usage[/<feed>]   (Bearer TOKEN or TOKEN_READ) current state for the app
+//   GET  /pair#t=<token>                                    pairing page (QR on PC, "open in app" on Android)
+//
+// TOKEN_READ is optional. When it is set, the phone gets only that token, so a leaked phone token
+// cannot write values or create new feeds.
 
 import { DurableObject } from "cloudflare:workers";
 import { applyReport, normalizeReport, present } from "./logic.js";
@@ -42,16 +45,19 @@ export default {
     if (!env.TOKEN) {
       return json({ error: "server_not_configured", hint: "npx wrangler secret put TOKEN" }, 500);
     }
-    if (!(await authorized(request, env.TOKEN))) {
+    const canWrite = await authorized(request, env.TOKEN);
+    if (!canWrite && !(env.TOKEN_READ && (await authorized(request, env.TOKEN_READ)))) {
       return json({ error: "unauthorized" }, 401, { "www-authenticate": "Bearer" });
     }
+    const isWrite = request.method === "POST" || request.method === "PUT";
+    if (isWrite && !canWrite) return json({ error: "read_only_token" }, 403);
 
     const store = env.USAGE_STORE.get(env.USAGE_STORE.idFromName(match[1] || "default"));
     const nowS = Math.floor(Date.now() / 1000);
 
     if (isRead) return json(present(await store.read(), nowS));
 
-    if (request.method === "POST" || request.method === "PUT") {
+    if (isWrite) {
       const raw = await request.text();
       if (raw.length > MAX_BODY_BYTES) return json({ error: "too_large" }, 413);
       let body;

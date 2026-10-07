@@ -2,11 +2,11 @@
 // One-time setup, run from this folder after `npm install`:
 //   1. log in to Cloudflare (browser) if needed
 //   2. deploy the relay Worker (free plan is fine)
-//   3. create a random token and store it as the Worker secret TOKEN
+//   3. create random tokens and store them as the Worker secrets TOKEN (PCs) and TOKEN_READ (phone)
 //   4. open the pairing page (QR code) for the phone
 //   5. optionally hook the sender into Claude Code's status line on this machine
 //
-// Options: --new-token   rotate the token (the phone and every PC must be re-paired)
+// Options: --new-token   rotate both tokens (the phone and every PC must be re-paired)
 //          --no-open     don't open the browser
 //          --yes         install the sender without asking
 
@@ -137,32 +137,43 @@ async function main() {
   console.log("\n== 3/5 トークンを設定");
   const rotate = args.has("--new-token") || !saved.token;
   const token = rotate ? randomBytes(32).toString("base64url") : saved.token;
-  const secret = await run("npx wrangler secret put TOKEN", { input: `${token}\n` });
-  if (secret.code !== 0) fail("TOKEN シークレットの設定に失敗しました。");
-  fs.writeFileSync(LOCAL, JSON.stringify({ url, token }, null, 2) + "\n", { mode: 0o600 });
+  // The phone only reads, so it gets its own token that the relay refuses for writes.
+  const readToken = rotate || !saved.readToken ? randomBytes(32).toString("base64url") : saved.readToken;
+  for (const [name, value] of [["TOKEN", token], ["TOKEN_READ", readToken]]) {
+    const secret = await run(`npx wrangler secret put ${name}`, { input: `${value}\n` });
+    if (secret.code !== 0) fail(`${name} シークレットの設定に失敗しました。`);
+  }
+  fs.writeFileSync(LOCAL, JSON.stringify({ url, token, readToken }, null, 2) + "\n", { mode: 0o600 });
+  // writeFileSync's mode only applies when the file is created.
+  try {
+    fs.chmodSync(LOCAL, 0o600);
+  } catch {}
   console.log(`✓ ${rotate ? "新しいトークンを作成" : "既存のトークンを再設定"}しました（${path.basename(LOCAL)} に保存。共有しないでください）`);
 
   process.stdout.write("  リレーの応答を確認中… ");
   console.log((await checkRelay(url, token)) ? "OK" : "まだ応答しません（数十秒後に再確認してください）");
 
   console.log("\n== 4/5 スマホとペアリング");
-  const pairUrl = `${url}/pair#t=${encodeURIComponent(token)}`;
+  const pairUrl = `${url}/pair#t=${encodeURIComponent(readToken)}`;
   console.log("次のページを PC のブラウザで開き、表示された QR コードをスマホで読み取ってください:");
   console.log(`  ${pairUrl}`);
+  console.log("  （スマホ用の読み取り専用トークンです。以前のトークンでペアリング済みのスマホも、読み取り直してください）");
   if (!args.has("--no-open")) openInBrowser(pairUrl);
 
   console.log("\n== 5/5 Claude Code への送信処理");
-  const installCmd = `node "${PUSH.replace(/\\/g, "/")}" install --url ${url} --token ${token}`;
+  // The token goes over stdin so it never shows up in the process list or shell history.
+  const installCmd = `node "${PUSH.replace(/\\/g, "/")}" install --url ${url} --token-stdin`;
   if (await ask("この環境の Claude Code（~/.claude/settings.json）に送信処理を追加しますか？")) {
-    const res = await run(installCmd, { interactive: true });
+    const res = await run(installCmd, { input: `${token}\n` });
     if (res.code !== 0) console.log("✗ 追加に失敗しました。上のメッセージを確認してください。");
   } else {
-    console.log("あとで追加する場合は次を実行してください:");
+    console.log("あとで追加する場合は次を実行し、聞かれたらトークンを貼り付けてください:");
     console.log(`  ${installCmd}`);
   }
 
   console.log("\n別の環境（例: WSL と Windows の両方）でも Claude Code を使う場合は、その環境の pc フォルダで:");
-  console.log(`  node limit-gauge-push.mjs install --url ${url} --token ${token}`);
+  console.log(`  node limit-gauge-push.mjs install --url ${url} --token-stdin`);
+  console.log(`  トークンは ${LOCAL} の "token" の値です（コマンドラインには書かず、聞かれたときに貼り付けてください）。`);
   console.log("\n完了です。Claude Code が次に応答すると、ウィジェットに値が表示されます。");
 }
 
