@@ -68,7 +68,7 @@ jobs:
               exit 1
             }
             echo "$out"
-            actual="$(printf '%s\n' "$out" | sed -n 's/^Signer #1 certificate SHA-256 digest: *//p' | head -1 | normalize)"
+            actual="$(printf '%s\n' "$out" | sed -nE 's/^(Signer #1|V[0-9]+ Signer): certificate SHA-256 digest: *//p; s/^Signer #1 certificate SHA-256 digest: *//p' | head -1 | normalize)"
             if [ -z "$actual" ]; then
               echo "::error::could not read the certificate SHA-256 digest of $apk"
               exit 1
