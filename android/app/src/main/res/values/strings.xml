@@ -10,6 +10,8 @@
     <string name="widget_week_desc">Weekly limit as a ring</string>
     <string name="widget_five_label">Claude 5-hour</string>
     <string name="widget_five_desc">5-hour limit as a ring</string>
+    <string name="widget_lock_label">Lock screen (no background)</string>
+    <string name="widget_lock_desc">Weekly and 5-hour side by side, with no background (for the lock screen)</string>
 
     <string name="label_five_hour">5 hours</string>
     <string name="label_weekly">Weekly</string>

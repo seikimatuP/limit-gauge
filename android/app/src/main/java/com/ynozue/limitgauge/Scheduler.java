@@ -47,7 +47,8 @@ final class Scheduler {
         if (Prefs.notifyEnabled(c)) return;
         android.appwidget.AppWidgetManager m = android.appwidget.AppWidgetManager.getInstance(c);
         if (m == null) return;
-        Class<?>[] providers = {CardWidgetProvider.class, WeeklyGaugeProvider.class, FiveHourGaugeProvider.class};
+        Class<?>[] providers = {CardWidgetProvider.class, WeeklyGaugeProvider.class, FiveHourGaugeProvider.class,
+                LockGaugeProvider.class};
         for (Class<?> p : providers) {
             int[] ids = m.getAppWidgetIds(new ComponentName(c, p));
             if (ids != null && ids.length > 0) return;

@@ -6,10 +6,12 @@ import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.util.SizeF;
@@ -74,6 +76,34 @@ final class WidgetRenderer {
     private static final Slot GAUGE_LARGE = new Slot(R.id.g_ring, R.id.g_ring_low, R.id.g_label, R.id.g_value,
             R.id.g_reset, R.dimen.ring_xl, true, 2.4f, false);
 
+    /**
+     * One half of the lock screen widget. Unlike {@link Slot} there is a single ring view: the ring is a
+     * pre-coloured, shadowed ARGB bitmap, so the red "low" state is drawn into it instead of shown by a
+     * second tinted view. {@code label} is 0 in the compact layout, which drops that row.
+     */
+    static final class LockSlot {
+        final int ring, label, value, reset;
+        final float numScale;
+
+        LockSlot(int ring, int label, int value, int reset, float numScale) {
+            this.ring = ring;
+            this.label = label;
+            this.value = value;
+            this.reset = reset;
+            this.numScale = numScale;
+        }
+    }
+
+    // Lock screen (no background): weekly and 5-hour side by side, full and compact (no label row).
+    private static final LockSlot LOCK_WEEK = new LockSlot(R.id.lw_ring, R.id.lw_label, R.id.lw_value,
+            R.id.lw_reset, 2.0f);
+    private static final LockSlot LOCK_FIVE = new LockSlot(R.id.lf_ring, R.id.lf_label, R.id.lf_value,
+            R.id.lf_reset, 2.0f);
+    private static final LockSlot LOCK_WEEK_COMPACT = new LockSlot(R.id.lw_ring, 0, R.id.lw_value,
+            R.id.lw_reset, 1.6f);
+    private static final LockSlot LOCK_FIVE_COMPACT = new LockSlot(R.id.lf_ring, 0, R.id.lf_value,
+            R.id.lf_reset, 1.6f);
+
     private WidgetRenderer() {}
 
     static void updateAll(Context c) {
@@ -95,6 +125,15 @@ final class WidgetRenderer {
         }
         for (int id : ids(c, m, FiveHourGaugeProvider.class)) {
             m.updateAppWidget(id, gauge(c, five, false, configured, showUsed, now, onKeyguard(m, id)));
+        }
+        // The lock screen widget never has a background, whatever host category it reports
+        // (LockStar on Galaxy may report none, which AOSP treats as the home screen).
+        int[] lockIds = ids(c, m, LockGaugeProvider.class);
+        if (lockIds.length > 0) {
+            RemoteViews lockViews = lock(c, d, configured, showUsed, now);
+            for (int id : lockIds) {
+                m.updateAppWidget(id, lockViews);
+            }
         }
     }
 
@@ -158,6 +197,71 @@ final class WidgetRenderer {
         return new RemoteViews(sized);
     }
 
+    // ---- Lock screen (no background) ------------------------------------------------------
+
+    static RemoteViews lock(Context c, UsageData d, boolean configured, boolean showUsed, long now) {
+        UsageData.Window week = d == null ? null : d.sevenDay;
+        UsageData.Window five = d == null ? null : d.fiveHour;
+        // Both layouts use the same ring size and the very same Bitmap objects, so the parcel carries
+        // each ring once (RemoteViews with sizes share one bitmap cache).
+        int ringPx = c.getResources().getDimensionPixelSize(R.dimen.ring_lock);
+        Bitmap weekRing = lockRing(c, ringPx, week, configured, showUsed, now);
+        Bitmap fiveRing = lockRing(c, ringPx, five, configured, showUsed, now);
+
+        RemoteViews full = new RemoteViews(c.getPackageName(), R.layout.widget_lock);
+        RemoteViews compact = new RemoteViews(c.getPackageName(), R.layout.widget_lock_compact);
+        full.setOnClickPendingIntent(android.R.id.background, openApp(c));
+        compact.setOnClickPendingIntent(android.R.id.background, openApp(c));
+        fillLockSlot(c, full, LOCK_WEEK, week, true, configured, showUsed, now, weekRing);
+        fillLockSlot(c, full, LOCK_FIVE, five, false, configured, showUsed, now, fiveRing);
+        fillLockSlot(c, compact, LOCK_WEEK_COMPACT, week, true, configured, showUsed, now, weekRing);
+        fillLockSlot(c, compact, LOCK_FIVE_COMPACT, five, false, configured, showUsed, now, fiveRing);
+
+        Map<SizeF, RemoteViews> sized = new HashMap<SizeF, RemoteViews>();
+        // Narrower or shorter than the full layout needs: no label row, smaller value, the countdown
+        // may wrap to two lines instead of being cut with an ellipsis.
+        sized.put(new SizeF(100f, 40f), compact);
+        // 4x1 and wider: label / value / countdown for both windows.
+        sized.put(new SizeF(300f, 56f), full);
+        return new RemoteViews(sized);
+    }
+
+    private static Bitmap lockRing(Context c, int px, UsageData.Window w, boolean configured,
+                                   boolean showUsed, long now) {
+        boolean has = configured && w != null;
+        int shown = 0;
+        boolean low = false;
+        if (has) {
+            int left = w.leftPercent(now);
+            shown = showUsed ? 100 - left : left;
+            low = left < LOW_LEFT;
+        }
+        int color = c.getColor(low ? R.color.lg_lock_critical : R.color.lg_lock_ring);
+        return GaugeBitmap.ringShadowed(c, px, shown, true, color);
+    }
+
+    private static void fillLockSlot(Context c, RemoteViews rv, LockSlot s, UsageData.Window w,
+                                     boolean weekly, boolean configured, boolean showUsed, long now,
+                                     Bitmap ring) {
+        boolean has = configured && w != null;
+        int shown = 0;
+        boolean low = false;
+        if (has) {
+            int left = w.leftPercent(now);
+            shown = showUsed ? 100 - left : left;
+            low = left < LOW_LEFT;
+        }
+        rv.setImageViewBitmap(s.ring, ring);
+        if (s.label != 0) rv.setTextViewText(s.label, label(c, weekly, showUsed, false, configured));
+        int accent = c.getColor(low ? R.color.lg_lock_critical : R.color.lg_lock_ring);
+        rv.setTextViewText(s.value, has ? valueLine(c, shown, showUsed, s.numScale, accent)
+                : c.getString(R.string.value_none));
+        rv.setTextViewText(s.reset, configured ? Formats.resetIn(c, w, now) : c.getString(R.string.sub_setup));
+        String desc = c.getString(weekly ? R.string.label_weekly : R.string.label_five_hour) + " "
+                + (has ? Formats.value(c, shown, showUsed) : c.getString(R.string.sub_no_data));
+        rv.setContentDescription(s.ring, desc);
+    }
+
     // ---- Shared by widgets and the notification -----------------------------------------
 
     /** Draws one ring gauge and its text into {@code rv}. {@code w} may be null (no data yet). */
@@ -204,6 +308,11 @@ final class WidgetRenderer {
 
     /** "94% left" / "残り 94%" with the number enlarged and bold, like the lock screen widget. */
     static CharSequence valueLine(Context c, int shown, boolean showUsed, float numScale) {
+        return valueLine(c, shown, showUsed, numScale, 0);
+    }
+
+    /** As above; a non-zero {@code numColor} also colours the number (the lock screen widget's accent). */
+    static CharSequence valueLine(Context c, int shown, boolean showUsed, float numScale, int numColor) {
         String num = c.getString(R.string.value_percent, shown);
         String full = c.getString(showUsed ? R.string.gauge_line_used : R.string.gauge_line_left, num);
         SpannableString sp = new SpannableString(full);
@@ -212,6 +321,9 @@ final class WidgetRenderer {
             int end = at + num.length();
             sp.setSpan(new RelativeSizeSpan(numScale), at, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             sp.setSpan(new StyleSpan(Typeface.BOLD), at, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            if (numColor != 0) {
+                sp.setSpan(new ForegroundColorSpan(numColor), at, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
         }
         return sp;
     }
