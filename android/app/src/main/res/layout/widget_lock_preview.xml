@@ -1,198 +1,190 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Claude limits card (2x2): weekly ring on top (main), 5-hour ring below. Only RemoteViews-safe views. Static sample for the widget picker. -->
+<!-- Lock screen widget: static sample for the widget picker (vector sample rings tinted with the fixed colour). -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@android:id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_bg"
-    android:clipToOutline="true"
-    android:padding="12dp">
+    android:background="@android:color/transparent"
+    android:padding="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <FrameLayout
-                android:layout_width="@dimen/ring_lg"
-                android:layout_height="@dimen/ring_lg">
+                android:layout_width="@dimen/ring_lock"
+                android:layout_height="@dimen/ring_lock">
 
                 <ImageView
-                    android:id="@+id/w_ring"
+                    android:id="@+id/lw_ring"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:contentDescription="@null"
                     android:scaleType="fitCenter"
                     android:src="@drawable/gauge_sample_week"
-                    android:tint="@color/lg_gauge"
+                    android:tint="@color/lg_lock_ring"
                     android:tintMode="src_in" />
 
                 <ImageView
-                    android:id="@+id/w_ring_low"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:contentDescription="@null"
-                    android:scaleType="fitCenter"
-                    android:tint="@color/lg_critical"
-                    android:tintMode="src_in"
-                    android:visibility="gone" />
-
-                <ImageView
-                    android:layout_width="19dp"
-                    android:layout_height="19dp"
+                    android:layout_width="17dp"
+                    android:layout_height="17dp"
                     android:layout_gravity="center"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_stat_gauge"
-                    android:tint="@color/lg_gauge"
+                    android:tint="@color/lg_lock_ring"
                     android:tintMode="src_in" />
             </FrameLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/w_label"
+                    android:id="@+id/lw_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:includeFontPadding="false"
                     android:maxLines="1"
+                    android:shadowColor="@color/lg_lock_shadow"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="5"
                     android:text="@string/gauge_label_weekly"
-                    android:textColor="@color/lg_gauge_text_secondary"
+                    android:textColor="@color/lg_lock_text"
                     android:textSize="11sp" />
 
                 <TextView
-                    android:id="@+id/w_value"
+                    android:id="@+id/lw_value"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="1dp"
                     android:ellipsize="end"
                     android:includeFontPadding="false"
                     android:maxLines="1"
+                    android:shadowColor="@color/lg_lock_shadow"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="5"
                     android:text="@string/preview_week_value"
-                    android:textColor="@color/lg_gauge_text"
-                    android:textSize="11sp" />
+                    android:textColor="@color/lg_lock_text"
+                    android:textSize="12sp" />
 
                 <TextView
-                    android:id="@+id/w_reset"
+                    android:id="@+id/lw_reset"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:ellipsize="end"
                     android:includeFontPadding="false"
                     android:maxLines="1"
+                    android:shadowColor="@color/lg_lock_shadow"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="5"
                     android:text="@string/preview_week_sub"
-                    android:textColor="@color/lg_gauge_text_secondary"
+                    android:textColor="@color/lg_lock_text"
                     android:textSize="11sp" />
             </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
+            android:layout_marginStart="14dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <FrameLayout
-                android:layout_width="@dimen/ring_sm"
-                android:layout_height="@dimen/ring_sm">
+                android:layout_width="@dimen/ring_lock"
+                android:layout_height="@dimen/ring_lock">
 
                 <ImageView
-                    android:id="@+id/f_ring"
+                    android:id="@+id/lf_ring"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:contentDescription="@null"
                     android:scaleType="fitCenter"
                     android:src="@drawable/gauge_sample_five"
-                    android:tint="@color/lg_gauge"
+                    android:tint="@color/lg_lock_ring"
                     android:tintMode="src_in" />
 
                 <ImageView
-                    android:id="@+id/f_ring_low"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:contentDescription="@null"
-                    android:scaleType="fitCenter"
-                    android:tint="@color/lg_critical"
-                    android:tintMode="src_in"
-                    android:visibility="gone" />
-
-                <ImageView
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
+                    android:layout_width="17dp"
+                    android:layout_height="17dp"
                     android:layout_gravity="center"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_stat_gauge"
-                    android:tint="@color/lg_gauge"
+                    android:tint="@color/lg_lock_ring"
                     android:tintMode="src_in" />
             </FrameLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/f_label"
+                    android:id="@+id/lf_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:includeFontPadding="false"
                     android:maxLines="1"
+                    android:shadowColor="@color/lg_lock_shadow"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="5"
                     android:text="@string/gauge_label_five"
-                    android:textColor="@color/lg_gauge_text_secondary"
+                    android:textColor="@color/lg_lock_text"
                     android:textSize="11sp" />
 
                 <TextView
-                    android:id="@+id/f_value"
+                    android:id="@+id/lf_value"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="1dp"
                     android:ellipsize="end"
                     android:includeFontPadding="false"
                     android:maxLines="1"
+                    android:shadowColor="@color/lg_lock_shadow"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="5"
                     android:text="@string/preview_five_value"
-                    android:textColor="@color/lg_gauge_text"
-                    android:textSize="11sp" />
+                    android:textColor="@color/lg_lock_text"
+                    android:textSize="12sp" />
 
                 <TextView
-                    android:id="@+id/f_reset"
+                    android:id="@+id/lf_reset"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:ellipsize="end"
                     android:includeFontPadding="false"
                     android:maxLines="1"
+                    android:shadowColor="@color/lg_lock_shadow"
+                    android:shadowDx="0"
+                    android:shadowDy="1"
+                    android:shadowRadius="5"
                     android:text="@string/preview_five_sub"
-                    android:textColor="@color/lg_gauge_text_secondary"
+                    android:textColor="@color/lg_lock_text"
                     android:textSize="11sp" />
             </LinearLayout>
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/as_of"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:gravity="end"
-            android:includeFontPadding="false"
-            android:maxLines="1"
-            android:text="@string/preview_as_of"
-            android:textColor="@color/lg_gauge_text_secondary"
-            android:textSize="9sp" />
     </LinearLayout>
 </FrameLayout>

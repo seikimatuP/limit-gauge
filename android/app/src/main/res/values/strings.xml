@@ -10,6 +10,8 @@
     <string name="widget_week_desc">Weekly limit as a ring</string>
     <string name="widget_five_label">Claude 5-hour</string>
     <string name="widget_five_desc">5-hour limit as a ring</string>
+    <string name="widget_lock_label">Lock screen (no background)</string>
+    <string name="widget_lock_desc">Weekly and 5-hour side by side, with no background (for the lock screen)</string>
 
     <string name="label_five_hour">5 hours</string>
     <string name="label_weekly">Weekly</string>
@@ -33,6 +35,25 @@
     <string name="sub_setup">Tap to set up</string>
     <string name="as_of">as of %1$s</string>
 
+    <!-- Ring gauge design (notification and widgets): label / big value + small word / countdown -->
+    <string name="gauge_label_weekly">Claude · Weekly</string>
+    <string name="gauge_label_five">Claude · 5h</string>
+    <string name="gauge_line_left">%1$s left</string>
+    <string name="gauge_line_used">%1$s used</string>
+    <string name="gauge_sub_five">5h %1$s</string>
+    <plurals name="reset_in_days">
+        <item quantity="one">Resets in %d day</item>
+        <item quantity="other">Resets in %d days</item>
+    </plurals>
+    <plurals name="reset_in_hours">
+        <item quantity="one">Resets in %d hour</item>
+        <item quantity="other">Resets in %d hours</item>
+    </plurals>
+    <plurals name="reset_in_minutes">
+        <item quantity="one">Resets in %d min</item>
+        <item quantity="other">Resets in %d min</item>
+    </plurals>
+
     <string name="detail_resets">Resets %1$s (in %2$s)</string>
     <string name="rel_days_hours">%1$dd %2$dh</string>
     <string name="rel_hours_minutes">%1$dh %2$dm</string>
@@ -40,11 +61,12 @@
 
     <!-- Widget previews (sample values shown in the widget picker) -->
     <string name="preview_as_of">as of 2:32 PM</string>
-    <string name="preview_five_value" formatted="false">77% left</string>
-    <string name="preview_five_sub">Resets 6:00 PM</string>
-    <string name="preview_week_value" formatted="false">46% left</string>
+    <string name="preview_five_value" formatted="false"><b><big><big><big>77%</big></big></big></b> left</string>
+    <string name="preview_five_sub">Resets in 3 hours</string>
+    <string name="preview_week_value" formatted="false"><b><big><big><big>46%</big></big></big></b> left</string>
     <string name="preview_week_sub">Resets in 5 days</string>
     <string name="preview_gauge_value" formatted="false">46%</string>
+    <string name="preview_gauge_value_five" formatted="false" translatable="false">77%</string>
     <string name="preview_gauge_sub">Resets in 5 days</string>
 
     <!-- App screen -->

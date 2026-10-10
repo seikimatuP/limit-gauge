@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="widget_padding">14dp</dimen>
-    <dimen name="widget_bar_height">6dp</dimen>
-    <dimen name="widget_bar_radius">3dp</dimen>
+
+    <!-- Ring gauge diameters. The same value sizes the ImageView in the layout and the bitmap drawn
+         for it by GaugeBitmap, so the ring is never scaled. -->
+    <dimen name="ring_xl">72dp</dimen>
+    <dimen name="ring_lg">46dp</dimen>
+    <dimen name="ring_md">40dp</dimen>
+    <dimen name="ring_sm">34dp</dimen>
+    <dimen name="ring_notif">36dp</dimen>
+    <dimen name="ring_xs">16dp</dimen>
+    <!-- Lock screen widget: one size for both its layouts, so the two rings are drawn only once. -->
+    <dimen name="ring_lock">40dp</dimen>
     <dimen name="card_radius">20dp</dimen>
 </resources>

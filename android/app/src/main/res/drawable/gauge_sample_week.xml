@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sample ring gauge at 46% for the widget picker previews (no centre glyph:
+     the 1x1 previews put the value there, the card previews overlay ic_stat_gauge).
+     Drawn in white like the bitmaps from GaugeBitmap; the ImageView tints it (tintMode src_in). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M24,2.2 A21.8,21.8 0 1,1 24,45.8 A21.8,21.8 0 1,1 24,2.2"
+        android:strokeAlpha="0.28"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="4.2" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M24,2.2 A21.8,21.8 0 0,1 29.42,45.12"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="4.2" />
+</vector>

@@ -8,4 +8,18 @@
     <color name="lg_accent">#FFD97757</color>
     <color name="lg_critical">#FFD63B3B</color>
     <color name="lg_icon_bg">#FFD97757</color>
+
+    <!-- Ring gauge design (notification + widgets). One blue tone: the ring bitmap is an alpha mask,
+         so the track shows as this colour at low alpha and the progress at full strength. -->
+    <color name="lg_gauge">#FF2563D6</color>
+    <color name="lg_gauge_text">#FF123A78</color>
+    <color name="lg_gauge_text_secondary">#FF4169A6</color>
+
+    <!-- Lock screen widget (no background): fixed colours, deliberately not overridden in
+         values-night, because the wallpaper behind it does not follow the night mode. The ring is
+         drawn pre-coloured by GaugeBitmap.ringShadowed; the text views carry a dark shadow. -->
+    <color name="lg_lock_ring">#FF9CC3FF</color>
+    <color name="lg_lock_text">#FFFFFFFF</color>
+    <color name="lg_lock_critical">#FFFF7B72</color>
+    <color name="lg_lock_shadow">#99000000</color>
 </resources>
