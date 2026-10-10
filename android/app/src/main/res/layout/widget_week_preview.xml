@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Static sample for the widget picker. -->
+<!-- Ring gauge, small (1x1): value inside the ring, short label below. Static sample for the widget picker. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@android:id/background"
     android:layout_width="match_parent"
@@ -15,40 +15,27 @@
         android:orientation="vertical">
 
         <FrameLayout
-            android:layout_width="44dp"
-            android:layout_height="44dp">
+            android:layout_width="@dimen/ring_md"
+            android:layout_height="@dimen/ring_md">
 
-            <ProgressBar
+            <ImageView
                 android:id="@+id/g_ring"
-                style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:indeterminate="false"
-                android:max="100"
-                android:maxHeight="400dp"
-                android:maxWidth="400dp"
-                android:minHeight="10dp"
-                android:minWidth="10dp"
-                android:progress="46"
-                android:progressBackgroundTint="@color/lg_track"
-                android:progressDrawable="@drawable/ring_normal"
-                android:progressTint="@color/lg_accent" />
+                android:contentDescription="@null"
+                android:scaleType="fitCenter"
+                android:src="@drawable/gauge_sample_week"
+                android:tint="@color/lg_gauge"
+                android:tintMode="src_in" />
 
-            <ProgressBar
+            <ImageView
                 android:id="@+id/g_ring_low"
-                style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:indeterminate="false"
-                android:max="100"
-                android:maxHeight="400dp"
-                android:maxWidth="400dp"
-                android:minHeight="10dp"
-                android:minWidth="10dp"
-                android:progress="46"
-                android:progressBackgroundTint="@color/lg_track"
-                android:progressDrawable="@drawable/ring_low"
-                android:progressTint="@color/lg_critical"
+                android:contentDescription="@null"
+                android:scaleType="fitCenter"
+                android:tint="@color/lg_critical"
+                android:tintMode="src_in"
                 android:visibility="gone" />
 
             <TextView
@@ -56,10 +43,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
+                android:includeFontPadding="false"
                 android:maxLines="1"
                 android:text="@string/preview_gauge_value"
-                android:textColor="@color/lg_text"
-                android:textSize="12sp"
+                android:textColor="@color/lg_gauge_text"
+                android:textSize="13sp"
                 android:textStyle="bold" />
         </FrameLayout>
 
@@ -67,22 +55,12 @@
             android:id="@+id/g_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
+            android:layout_marginTop="3dp"
             android:ellipsize="end"
+            android:includeFontPadding="false"
             android:maxLines="1"
             android:text="@string/gauge_week_left"
-            android:textColor="@color/lg_text_secondary"
+            android:textColor="@color/lg_gauge_text_secondary"
             android:textSize="9sp" />
-
-        <TextView
-            android:id="@+id/g_sub"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textColor="@color/lg_text_secondary"
-            android:textSize="10sp"
-            android:visibility="gone" />
     </LinearLayout>
 </FrameLayout>

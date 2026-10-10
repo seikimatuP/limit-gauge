@@ -64,6 +64,26 @@ final class Formats {
         return c.getString(R.string.sub_resets_at, when(c, w.resetsAt, nowSec));
     }
 
+    /**
+     * Countdown line of the ring gauge: "Resets in 6 days" / "あと3時間でリセット" / "あと25分でリセット".
+     * Days from 24 hours on, hours from 1 hour on, minutes below that.
+     */
+    static String resetIn(Context c, UsageData.Window w, long nowSec) {
+        if (w == null) return c.getString(R.string.sub_no_data);
+        if (w.isExpired(nowSec)) return c.getString(R.string.sub_reset_done);
+        long left = w.secondsUntilReset(nowSec);
+        if (left >= 86400L) {
+            int days = (int) Math.max(1L, Math.round(left / 86400.0));
+            return c.getResources().getQuantityString(R.plurals.reset_in_days, days, days);
+        }
+        if (left >= 3600L) {
+            int hours = (int) Math.max(1L, Math.round(left / 3600.0));
+            return c.getResources().getQuantityString(R.plurals.reset_in_hours, hours, hours);
+        }
+        int minutes = (int) Math.max(1L, (left + 59L) / 60L);
+        return c.getResources().getQuantityString(R.plurals.reset_in_minutes, minutes, minutes);
+    }
+
     /** Detailed line for the app screen: "10/11(土) 18:00 にリセット（あと4日6時間）". */
     static String resetDetail(Context c, UsageData.Window w, long nowSec) {
         if (w == null) return c.getString(R.string.sub_no_data);

@@ -7,4 +7,8 @@
     <color name="lg_track">#FF46453F</color>
     <color name="lg_accent">#FFE38B6B</color>
     <color name="lg_critical">#FFF0645A</color>
+
+    <color name="lg_gauge">#FF7FAEFF</color>
+    <color name="lg_gauge_text">#FFD6E4FF</color>
+    <color name="lg_gauge_text_secondary">#FF9DBBEF</color>
 </resources>

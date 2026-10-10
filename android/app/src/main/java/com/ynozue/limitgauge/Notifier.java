@@ -8,10 +8,15 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.widget.RemoteViews;
 
 /**
  * Optional ongoing notification so the limits also show on the lock screen.
- * On Android 16+ it can additionally ask to be promoted to a Live Update (status-bar chip).
+ *
+ * Normally it uses a custom view (DecoratedCustomViewStyle) with the ring gauge design shared with the
+ * widgets: collapsed = weekly ring, label, value and countdown plus a small 5-hour ring; expanded = both
+ * gauges side by side. When the Live Update option is on (Android 16+), it keeps the standard template
+ * with a progress bar instead, because a notification with a custom view is never promoted.
  */
 final class Notifier {
     static final String CHANNEL = "usage_status";
@@ -19,6 +24,16 @@ final class Notifier {
 
     /** Notification.EXTRA_REQUEST_PROMOTED_ONGOING (public from API 36.1; the key already works on 36). */
     private static final String EXTRA_REQUEST_PROMOTED_ONGOING = "android.requestPromotedOngoing";
+
+    private static final WidgetRenderer.Slot COLLAPSED_WEEK = new WidgetRenderer.Slot(R.id.w_ring,
+            R.id.w_ring_low, R.id.w_label, R.id.w_value, R.id.w_reset, R.dimen.ring_notif, true, 1.75f, false);
+    /** Only the small ring; its "5h 77%" text is set by {@link #collapsed}. */
+    private static final WidgetRenderer.Slot COLLAPSED_FIVE = new WidgetRenderer.Slot(R.id.f_ring,
+            R.id.f_ring_low, 0, 0, 0, R.dimen.ring_xs, false, 0f, false);
+    private static final WidgetRenderer.Slot EXPANDED_WEEK = new WidgetRenderer.Slot(R.id.w_ring,
+            R.id.w_ring_low, R.id.w_label, R.id.w_value, R.id.w_reset, R.dimen.ring_lg, true, 2.0f, false);
+    private static final WidgetRenderer.Slot EXPANDED_FIVE = new WidgetRenderer.Slot(R.id.f_ring,
+            R.id.f_ring_low, R.id.f_label, R.id.f_value, R.id.f_reset, R.dimen.ring_md, true, 2.0f, false);
 
     private Notifier() {}
 
@@ -49,6 +64,7 @@ final class Notifier {
         String text = c.getString(R.string.notif_text,
                 Formats.resetLine(c, week, now, true), Formats.resetLine(c, five, now, false));
 
+        // Title and text stay set in both modes, for screen readers and the notification history.
         Notification.Builder b = new Notification.Builder(c, CHANNEL)
                 .setSmallIcon(R.drawable.ic_stat_gauge)
                 .setContentTitle(title)
@@ -59,13 +75,16 @@ final class Notifier {
                 .setLocalOnly(true)
                 .setCategory(Notification.CATEGORY_STATUS)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
-                .setColor(c.getColor(R.color.lg_accent))
                 .setContentIntent(WidgetRenderer.openApp(c));
-        if (week != null) {
-            int left = week.leftPercent(now);
-            b.setProgress(100, showUsed ? 100 - left : left, false);
-        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA && Prefs.liveUpdate(c)) {
+            // Live Update: the standard template, unchanged (a custom view would block promotion).
+            // The option can only be switched on from Android 16, so older versions always get the gauge.
+            b.setColor(c.getColor(R.color.lg_accent));
+            if (week != null) {
+                int left = week.leftPercent(now);
+                b.setProgress(100, showUsed ? 100 - left : left, false);
+            }
             Bundle extras = new Bundle();
             extras.putBoolean(EXTRA_REQUEST_PROMOTED_ONGOING, true);
             b.addExtras(extras);
@@ -73,8 +92,41 @@ final class Notifier {
                 int left = week.leftPercent(now);
                 b.setShortCriticalText(c.getString(R.string.value_percent, showUsed ? 100 - left : left));
             }
+        } else {
+            b.setColor(c.getColor(R.color.lg_gauge))
+                    .setStyle(new Notification.DecoratedCustomViewStyle())
+                    .setCustomContentView(collapsed(c, week, five, showUsed, now))
+                    .setCustomBigContentView(expanded(c, week, five, showUsed, now));
+            String asOf = d == null ? "" : Formats.asOf(c, d.updatedAt, now);
+            if (!asOf.isEmpty()) b.setSubText(asOf);
         }
         nm.notify(ID, b.build());
+    }
+
+    /** Collapsed: weekly gauge with label, value and countdown; a small 5-hour ring with its value. */
+    private static RemoteViews collapsed(Context c, UsageData.Window week, UsageData.Window five,
+                                         boolean showUsed, long now) {
+        RemoteViews rv = new RemoteViews(c.getPackageName(), R.layout.notif_collapsed);
+        WidgetRenderer.fillSlot(c, rv, COLLAPSED_WEEK, week, true, true, showUsed, now);
+        WidgetRenderer.fillSlot(c, rv, COLLAPSED_FIVE, five, false, true, showUsed, now);
+        String fiveValue = five == null ? c.getString(R.string.value_none)
+                : c.getString(R.string.value_percent, shownPercent(five, showUsed, now));
+        rv.setTextViewText(R.id.f_value, c.getString(R.string.gauge_sub_five, fiveValue));
+        return rv;
+    }
+
+    /** Expanded: weekly (larger ring) and 5-hour gauges side by side. */
+    private static RemoteViews expanded(Context c, UsageData.Window week, UsageData.Window five,
+                                        boolean showUsed, long now) {
+        RemoteViews rv = new RemoteViews(c.getPackageName(), R.layout.notif_expanded);
+        WidgetRenderer.fillSlot(c, rv, EXPANDED_WEEK, week, true, true, showUsed, now);
+        WidgetRenderer.fillSlot(c, rv, EXPANDED_FIVE, five, false, true, showUsed, now);
+        return rv;
+    }
+
+    private static int shownPercent(UsageData.Window w, boolean showUsed, long now) {
+        int left = w.leftPercent(now);
+        return showUsed ? 100 - left : left;
     }
 
     private static String valueText(Context c, UsageData.Window w, boolean showUsed, long now) {
