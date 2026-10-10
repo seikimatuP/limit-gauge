@@ -111,8 +111,8 @@ cd relay && npx wrangler delete                   # リレーを削除
 - `http://` が使えるのは LAN や Tailscale のアドレス（プライベート IP、`100.64.0.0/10`、`*.ts.net`、`localhost` など）だけです。インターネット上のサーバーは `https://` にしてください（トークンが平文で流れるのを防ぐため）。
 
 ## ビルドについて
-- Releases の APK は Gradle を使わず `android/tools/build-apk.sh`（aapt2 + javac + AOSP の dx + v2 署名）でビルドし、apksigtool で署名を検証済みです。出力先は `dist/` です。
-- Android Studio では `android/` を開けば Gradle（AGP 8.13.2 / Gradle 8.14.3）でビルドできる構成にしてありますが、Gradle ビルド自体はこちらの環境では実行できていません。
+- v1.2.0 以降の Releases の APK は、GitHub Actions（`.github/workflows/build-apk.yml`）が Gradle（AGP 8.13.2 / Gradle 8.14.3）の `assembleRelease` でビルドし、`apksigner` で署名証明書の SHA-256 が作者の鍵と一致することを確かめています。鍵は GitHub Actions の Secrets から復元し、リポジトリには含めていません。
+- v1.1.0 までは Gradle を使わず `android/tools/build-apk.sh`（aapt2 + javac + AOSP の dx + v2 署名）でビルドしていました。このスクリプトも引き続き使えます（出力先は `dist/`）。
 - Releases の APK は作者の鍵で署名しています（鍵はリポジトリに含めていません）。自分でビルドした APK は署名が異なるため Releases 版の上から上書きインストールできません。入れ替えるときは一度アンインストールしてください。
 - 自分の鍵を使う場合は `android/keystore/` に `keystore.properties`（`storeFile` / `storePassword` / `keyAlias` / `keyPassword`）と鍵ファイルを置きます。**鍵は公開リポジトリに入れないでください**（.gitignore 済み）。
 - テスト: `android/tools/run-logic-tests.sh`（解析ロジック）、`cd relay && npm test`（マージロジック）。

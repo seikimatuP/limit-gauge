@@ -1,0 +1,86 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # Same key as the APK already installed, so builds install over it.
+      # Secrets: KEYSTORE_BASE64 (base64 of limitgauge.p12), KEYSTORE_PASSWORD.
+      - name: Restore signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "::error::KEYSTORE_BASE64 / KEYSTORE_PASSWORD secrets are not set"
+            exit 1
+          fi
+          mkdir -p keystore
+          echo "$KEYSTORE_BASE64" | base64 -d > keystore/limitgauge.p12
+          printf 'storeFile=limitgauge.p12\nstorePassword=%s\nkeyAlias=limitgauge\nkeyPassword=%s\n' \
+            "$KEYSTORE_PASSWORD" "$KEYSTORE_PASSWORD" > keystore/keystore.properties
+
+      - name: Build
+        run: chmod +x gradlew && ./gradlew --no-daemon assembleRelease
+
+      # Fail if the APK is not signed with the key of the already-installed APK
+      # (otherwise it cannot be installed over it). The fingerprint is public information.
+      - name: Verify signing certificate
+        env:
+          EXPECTED_SHA256: F5:64:07:AC:28:1E:DE:95:11:14:BD:4A:DD:83:98:28:39:01:A1:9D:81:15:24:02:C8:04:0A:5F:AA:9D:03:57
+        run: |
+          if [ -z "$ANDROID_HOME" ] || [ ! -d "$ANDROID_HOME/build-tools" ]; then
+            echo "::error::ANDROID_HOME/build-tools not found (ANDROID_HOME='$ANDROID_HOME')"
+            exit 1
+          fi
+          BT_VERSION="$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          APKSIGNER="$ANDROID_HOME/build-tools/$BT_VERSION/apksigner"
+          if [ -z "$BT_VERSION" ] || [ ! -x "$APKSIGNER" ]; then
+            echo "::error::apksigner not found under $ANDROID_HOME/build-tools"
+            exit 1
+          fi
+          shopt -s nullglob
+          apks=(app/build/outputs/apk/release/*.apk)
+          if [ "${#apks[@]}" -eq 0 ]; then
+            echo "::error::no release APK found in app/build/outputs/apk/release"
+            exit 1
+          fi
+          normalize() { tr -d ': \n\r' | tr '[:lower:]' '[:upper:]'; }
+          expected="$(printf '%s' "$EXPECTED_SHA256" | normalize)"
+          for apk in "${apks[@]}"; do
+            out="$("$APKSIGNER" verify --print-certs "$apk")" || {
+              echo "::error::apksigner verify failed for $apk"
+              exit 1
+            }
+            echo "$out"
+            actual="$(printf '%s\n' "$out" | sed -n 's/^Signer #1 certificate SHA-256 digest: *//p' | head -1 | normalize)"
+            if [ -z "$actual" ]; then
+              echo "::error::could not read the certificate SHA-256 digest of $apk"
+              exit 1
+            fi
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::signing certificate mismatch for $apk: got $actual, expected $expected"
+              exit 1
+            fi
+            echo "OK: $apk is signed with the expected certificate ($actual)"
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LimitGauge
+          path: android/app/build/outputs/apk/release/*.apk
