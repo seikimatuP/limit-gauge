@@ -25,7 +25,7 @@
 
     <string name="sub_resets_at">%1$sにリセット</string>
     <plurals name="sub_resets_in_days">
-        <item quantity="other">あと%d日でリセット</item>
+        <item quantity="other">%d日後リセット</item>
     </plurals>
     <string name="sub_reset_done">リセット済み</string>
     <string name="sub_no_data">データなし</string>
@@ -38,14 +38,15 @@
     <string name="gauge_line_left">残り %1$s</string>
     <string name="gauge_line_used">%1$s 使用</string>
     <string name="gauge_sub_five">5時間 %1$s</string>
+    <!-- リセットまで: ロック画面用 4×1 では1行が約8.5文字分（11sp）しか入らないため、最長の「24時間後リセット」でも約8文字分に収める -->
     <plurals name="reset_in_days">
-        <item quantity="other">あと%d日でリセット</item>
+        <item quantity="other">%d日後リセット</item>
     </plurals>
     <plurals name="reset_in_hours">
-        <item quantity="other">あと%d時間でリセット</item>
+        <item quantity="other">%d時間後リセット</item>
     </plurals>
     <plurals name="reset_in_minutes">
-        <item quantity="other">あと%d分でリセット</item>
+        <item quantity="other">%d分後リセット</item>
     </plurals>
 
     <string name="detail_resets">%1$s にリセット（あと%2$s）</string>
@@ -56,11 +57,11 @@
     <!-- ウィジェット選択画面のサンプル表示 -->
     <string name="preview_as_of">14:32時点</string>
     <string name="preview_five_value" formatted="false">残り <b><big><big><big>77%</big></big></big></b></string>
-    <string name="preview_five_sub">あと3時間でリセット</string>
+    <string name="preview_five_sub">3時間後リセット</string>
     <string name="preview_week_value" formatted="false">残り <b><big><big><big>46%</big></big></big></b></string>
-    <string name="preview_week_sub">あと5日でリセット</string>
+    <string name="preview_week_sub">5日後リセット</string>
     <string name="preview_gauge_value" formatted="false">46%</string>
-    <string name="preview_gauge_sub">あと5日でリセット</string>
+    <string name="preview_gauge_sub">5日後リセット</string>
 
     <!-- アプリ画面 -->
     <string name="main_subtitle">Claude Code の利用リミットをホーム画面に</string>

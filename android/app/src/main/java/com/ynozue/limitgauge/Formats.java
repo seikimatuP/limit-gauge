@@ -52,7 +52,7 @@ final class Formats {
         return monthDayWeekday(epochSec) + " " + time(c, epochSec);
     }
 
-    /** Short line under a widget bar: "15:00にリセット", "あと5日でリセット", "リセット済み". */
+    /** Short line under a widget bar: "15:00にリセット", "5日後リセット", "リセット済み". */
     static String resetLine(Context c, UsageData.Window w, long nowSec, boolean weekly) {
         if (w == null) return c.getString(R.string.sub_no_data);
         if (w.isExpired(nowSec)) return c.getString(R.string.sub_reset_done);
@@ -65,7 +65,7 @@ final class Formats {
     }
 
     /**
-     * Countdown line of the ring gauge: "Resets in 6 days" / "あと3時間でリセット" / "あと25分でリセット".
+     * Countdown line of the ring gauge: "Resets in 6 days" / "3時間後リセット" / "25分後リセット".
      * Days from 24 hours on, hours from 1 hour on, minutes below that.
      */
     static String resetIn(Context c, UsageData.Window w, long nowSec) {
